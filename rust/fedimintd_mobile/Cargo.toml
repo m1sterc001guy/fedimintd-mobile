@@ -1,0 +1,21 @@
+[package]
+name = "fedimintd_mobile"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+fedimint-core = "0.7.2"
+fedimintd = "0.7.2"
+flutter_rust_bridge = "=2.9.0"
+
+[build-dependencies]
+fedimint-build = "0.7.2"
+
+[profile.dev.package]
+tikv-jemalloc-sys = { opt-level = 3 }
+librocksdb-sys = { opt-level = 3 }
+secp256k1 = { opt-level = 3}
+secp256k1-sys = { opt-level = 3}
