@@ -18,8 +18,9 @@ void main() async {
 
 Future<void> _fedimintd() async {
   try {
-    final dir = await getApplicationDocumentsDirectory();
-    AppLogger.instance.info("Starting fedimintd with directory: ${dir.path}");
+    //final dir = await getApplicationDocumentsDirectory();
+    final dir = await getExternalStorageDirectory();
+    AppLogger.instance.info("Starting fedimintd with directory: ${dir!.path}");
     await startFedimintd(path: dir.path);
   } catch (e) {
     print("Could not start fedimintd: $e");

@@ -2349,6 +2349,7 @@ dependencies = [
  "fedimint-core",
  "fedimintd",
  "flutter_rust_bridge",
+ "libc",
 ]
 
 [[package]]
