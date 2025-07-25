@@ -1,6 +1,6 @@
 {
   inputs = {
-    fedimint.url = "github:fedimint/fedimint?rev=b983d25d4c3cce1751c54e3ad0230fc507e3aeec";
+    fedimint.url = "github:fedimint/fedimint?rev=7e6acf32b2f47007d4ba761e4ee8dc77a23b0168";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixgl.url = "github:guibou/nixGL";
@@ -96,6 +96,7 @@
               pkgs.cargo-expand
               pkgs.jdk21
               androidPkgs.android-sdk
+              pkgs.gcc13
             ] ++ pkgs.lib.optionals (pkgs.stdenv.system == "x86_64-linux") [
               androidPkgs.android-studio
             ];

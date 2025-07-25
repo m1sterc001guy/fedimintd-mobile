@@ -7,12 +7,13 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-fedimint-core = "0.7.2"
-fedimintd = "0.7.2"
+bitcoin = { version = "0.32.6", features = ["serde"] }
+fedimint-core = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.0-beta.2" }
+fedimintd = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.0-beta.2" }
 flutter_rust_bridge = "=2.9.0"
 
 [build-dependencies]
-fedimint-build = "0.7.2"
+fedimint-build = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.0-beta.2" }
 
 [profile.dev.package]
 tikv-jemalloc-sys = { opt-level = 3 }
