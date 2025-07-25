@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fedimintd_mobile/frb_generated.dart';
 import 'package:fedimintd_mobile/lib.dart';
+import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -9,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLogger.init();
   await RustLib.init();
   _fedimintd();
   runApp(const MyApp());
@@ -17,9 +19,11 @@ void main() async {
 Future<void> _fedimintd() async {
   try {
     final dir = await getApplicationDocumentsDirectory();
+    AppLogger.instance.info("Starting fedimintd with directory: ${dir.path}");
     await startFedimintd(path: dir.path);
   } catch (e) {
     print("Could not start fedimintd: $e");
+    AppLogger.instance.error("Could not start fedimintd: $e");
   }
 }
 
@@ -61,7 +65,8 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isLinux) {
+    //if (Platform.isLinux) {
+    if (true) {
       return Scaffold(
         appBar: AppBar(title: const Text('Open in Browser')),
         body: Center(
