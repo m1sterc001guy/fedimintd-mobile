@@ -1,13 +1,16 @@
-import 'package:carbine/frb_generated.dart';
-import 'package:carbine/lib.dart';
+import 'dart:io';
+
+import 'package:fedimintd_mobile/frb_generated.dart';
+import 'package:fedimintd_mobile/lib.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await RustLib.init();
-  await _fedimintd();
+  _fedimintd();
   runApp(const MyApp());
 }
 
@@ -25,7 +28,54 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: WebViewScreen());
+    return const MaterialApp(home: PlatformAwareHome());
+  }
+}
+
+class PlatformAwareHome extends StatefulWidget {
+  const PlatformAwareHome({super.key});
+
+  @override
+  State<PlatformAwareHome> createState() => _PlatformAwareHomeState();
+}
+
+class _PlatformAwareHomeState extends State<PlatformAwareHome> {
+  final Uri _url = Uri.parse('http://localhost:8175');
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (Platform.isLinux) {
+      // On Linux, open default browser immediately and show instructions
+      _launchInBrowser();
+    }
+  }
+
+  Future<void> _launchInBrowser() async {
+    print("Launching $_url in browser...");
+    if (!await launchUrl(_url, mode: LaunchMode.externalApplication)) {
+      print('Could not launch $_url');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (Platform.isLinux) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Open in Browser')),
+        body: Center(
+          child: Text(
+            'Please open your web browser and visit:\n\n$_url',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18),
+          ),
+        ),
+      );
+    } else {
+      // On non-Linux, show WebView
+      return const WebViewScreen();
+    }
   }
 }
 
@@ -42,8 +92,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
   @override
   void initState() {
     super.initState();
-    // Enable hybrid composition for Android (optional, improves WebView stability)
-    // WebView.platform = SurfaceAndroidWebView(); // Uncomment if needed and import
 
     _controller =
         WebViewController()
