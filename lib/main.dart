@@ -18,8 +18,13 @@ void main() async {
 
 Future<void> _fedimintd() async {
   try {
-    //final dir = await getApplicationDocumentsDirectory();
-    final dir = await getExternalStorageDirectory();
+    final dir;
+    if (Platform.isAndroid) {
+      dir = await getExternalStorageDirectory();
+    } else {
+      dir = await getApplicationDocumentsDirectory();
+    }
+
     AppLogger.instance.info("Starting fedimintd with directory: ${dir!.path}");
     await startFedimintd(path: dir.path);
   } catch (e) {
