@@ -71,8 +71,7 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
 
   @override
   Widget build(BuildContext context) {
-    //if (Platform.isLinux) {
-    if (true) {
+    if (Platform.isLinux) {
       return Scaffold(
         appBar: AppBar(title: const Text('Open in Browser')),
         body: Center(
