@@ -98,6 +98,8 @@ class WebViewScreen extends StatefulWidget {
 
 class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
+  bool _isLoading = false;
+  bool _refreshTriggered = false;
 
   @override
   void initState() {
@@ -105,15 +107,52 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
     _controller =
         WebViewController()
-          ..loadRequest(Uri.parse('http://localhost:8175'))
-          ..setJavaScriptMode(JavaScriptMode.unrestricted);
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted: (_) {
+                setState(() => _isLoading = true);
+              },
+              onPageFinished: (_) {
+                setState(() => _isLoading = false);
+                if (_refreshTriggered) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Refreshed dashboard')),
+                  );
+                  _refreshTriggered = false;
+                }
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse('http://localhost:8175'));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("")),
-      body: WebViewWidget(controller: _controller),
+      appBar: AppBar(
+        title: const Text(""),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _refreshTriggered = true;
+              _controller.reload();
+            },
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const LinearProgressIndicator(
+              minHeight: 2,
+              backgroundColor: Colors.transparent,
+            ),
+        ],
+      ),
     );
   }
 }
