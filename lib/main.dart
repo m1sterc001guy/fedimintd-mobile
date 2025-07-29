@@ -28,7 +28,7 @@ Future<void> openBatterySettings() async {
   }
 }
 
-Future<void> enableBackgroundExecution(BuildContext context) async {
+Future<bool> enableBackgroundExecution(BuildContext context) async {
   final androidConfig = FlutterBackgroundAndroidConfig(
     notificationTitle: "Fedimint",
     notificationText: "fedimintd is running in the background",
@@ -40,40 +40,51 @@ Future<void> enableBackgroundExecution(BuildContext context) async {
 
   if (!hasPermissions) {
     if (context.mounted) {
-      showDialog(
+      final result = await showDialog<bool>(
         context: context,
+        barrierDismissible: false,
         builder:
             (context) => AlertDialog(
-              title: const Text("Permission Required"),
+              title: const Text("Background Permission Required"),
               content: const Text(
-                "This app needs background execution permissions to keep fedimintd running when minimized. "
-                "Please check your system settings or battery optimization.",
+                "This app needs permission to run in the background in order to function. "
+                "Please enable background execution or exit.",
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
-                    openBatterySettings(); // 👈 open system settings
+                    Navigator.of(context).pop(false);
                   },
-                  child: const Text("Open Settings"),
+                  child: const Text("Exit"),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Cancel"),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                    openBatterySettings();
+                  },
+                  child: const Text("Open Settings"),
                 ),
               ],
             ),
       );
+
+      if (result != true) {
+        // Exit the app if the user chooses "Exit" or dismisses
+        exit(0);
+      }
     }
-    return;
+    return false;
   }
 
-  final success = await FlutterBackground.initialize(
+  final initialized = await FlutterBackground.initialize(
     androidConfig: androidConfig,
   );
-  if (success) {
+  if (initialized) {
     await FlutterBackground.enableBackgroundExecution();
+    return true;
   }
+
+  return false;
 }
 
 Future<void> _fedimintd() async {
@@ -117,10 +128,11 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
     super.initState();
 
     if (Platform.isLinux) {
-      // On Linux, open default browser immediately and show instructions
       _launchInBrowser();
     } else {
-      enableBackgroundExecution(context);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        enableBackgroundExecution(context);
+      });
     }
   }
 
