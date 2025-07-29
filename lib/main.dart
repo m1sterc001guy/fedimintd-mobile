@@ -4,6 +4,8 @@ import 'package:fedimintd_mobile/frb_generated.dart';
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,6 +16,64 @@ void main() async {
   await RustLib.init();
   _fedimintd();
   runApp(const MyApp());
+}
+
+const platform = MethodChannel('io.fedimintd/settings');
+
+Future<void> openBatterySettings() async {
+  try {
+    await platform.invokeMethod('openBatterySettings');
+  } on PlatformException catch (e) {
+    print("Failed to open battery settings: ${e.message}");
+  }
+}
+
+Future<void> enableBackgroundExecution(BuildContext context) async {
+  final androidConfig = FlutterBackgroundAndroidConfig(
+    notificationTitle: "Fedimint",
+    notificationText: "fedimintd is running in the background",
+    notificationImportance: AndroidNotificationImportance.normal,
+    enableWifiLock: true,
+  );
+
+  final hasPermissions = await FlutterBackground.hasPermissions;
+
+  if (!hasPermissions) {
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text("Permission Required"),
+              content: const Text(
+                "This app needs background execution permissions to keep fedimintd running when minimized. "
+                "Please check your system settings or battery optimization.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    openBatterySettings(); // 👈 open system settings
+                  },
+                  child: const Text("Open Settings"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("Cancel"),
+                ),
+              ],
+            ),
+      );
+    }
+    return;
+  }
+
+  final success = await FlutterBackground.initialize(
+    androidConfig: androidConfig,
+  );
+  if (success) {
+    await FlutterBackground.enableBackgroundExecution();
+  }
 }
 
 Future<void> _fedimintd() async {
@@ -59,6 +119,8 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
     if (Platform.isLinux) {
       // On Linux, open default browser immediately and show instructions
       _launchInBrowser();
+    } else {
+      enableBackgroundExecution(context);
     }
   }
 
