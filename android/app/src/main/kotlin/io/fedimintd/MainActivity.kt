@@ -1,4 +1,4 @@
-package com.example.carbine
+package io.fedimintd
 
 import io.flutter.embedding.android.FlutterActivity
 
