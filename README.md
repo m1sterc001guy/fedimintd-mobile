@@ -1,9 +1,30 @@
-# Carbine - A Fedimint Wallet
+# Fedimint Mobile
 
-Carbine is a Fedimint wallet built using Flutter, Rust, and the Flutter Rust Bridge.
+Fedimintd Mobile is a Flutter-based app that allows you to run a [Fedimint](https://fedimint.org/) **Guardian node** directly on **Android** or **Linux** devices. It leverages [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge) to integrate a Rust-based Fedimint backend with a mobile-friendly UI.
 
-## Getting set up
-Carbine uses nix and nix flakes to manage dependencies and build the project.
+<p algin="center">
+  <img src="docs/setup.jpeg">
+  <img src="docs/dashboard.jpeg">
+</p>
+
+## Supported Platforms
+ - Android
+ - Linux
+
+PRs to add iOS support are welcome.
+
+## ⚠️ Warning: Not currently recommended for production use
+
+While this application is just a wrapper around `fedimintd`, an Android device is typically not the ideal deployment for an always-on server application. Use at your own risk.
+
+## Why Use Fedimintd Mobile?
+
+- **Easy setup experience** No server is required, only an Android phone or Linux machine
+- **Run a portable Fedimint Guardian** Your guardian can be on the go
+- **Explore Federated Ecash** Easily deploy an ecash mint in a federated or centralized configuration
+
+### Development
+Fedimint Mobile uses nix and nix flakes to manage dependencies and build the project.
 
 First, install nix
 
@@ -22,11 +43,13 @@ To generate the Flutter bindings for the rust code, simply run
 just generate
 ```
 
-This will also build the rust library and place it in the appropriate location on Linux machines.
+To build the rust code, run
+```bash
+just build-linux
+just build-android-arm
+```
 
 To run the app on Linux, simply run
 ```bash
 just run
 ```
-
-Done! This will launch Carbine on Linux. Android is currently not supported yet.
