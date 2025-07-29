@@ -33,8 +33,8 @@ pub async fn start_fedimintd(path: String) -> anyhow::Result<()> {
     println!("Starting fedimintd...");
     std::env::set_var("FM_ENABLE_IROH", "true");
     std::env::set_var("FM_DATA_DIR", path);
-    std::env::set_var("FM_BITCOIN_NETWORK", "signet");
-    std::env::set_var("FM_ESPLORA_URL", "https://mutinynet.com/api");
+    std::env::set_var("FM_BITCOIN_NETWORK", "bitcoin");
+    std::env::set_var("FM_ESPLORA_URL", "https://mempool.space/api");
     // Not sure if this is currently necessary
     std::env::set_var("FM_BIND_UI", "0.0.0.0:8175");
     fedimintd::run(
