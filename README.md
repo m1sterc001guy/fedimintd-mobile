@@ -21,9 +21,9 @@ PRs to add iOS support are welcome.
 
 ## Why Use Fedimintd Mobile?
 
-- **Easy setup experience** No server is required, only an Android phone or Linux machine
-- **Run a portable Fedimint Guardian** Your guardian can be on the go
-- **Explore Federated Ecash** Easily deploy an ecash mint in a federated or centralized configuration
+- **Easy setup experience**: No server is required, only an Android phone or Linux machine
+- **Run a portable Fedimint Guardian**: Your guardian can be on the go
+- **Explore Federated Ecash**: Easily deploy an ecash mint in a federated or centralized configuration
 
 ## Development
 Fedimint Mobile uses nix and nix flakes to manage dependencies and build the project.
@@ -34,21 +34,15 @@ First, install nix
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
 
-Then enter the nix developer environment.
+Then enter the nix developer environment. First invocation will take some time.
 
 ```bash
 nix develop
 ```
 
-To generate the Flutter bindings for the rust code, simply run
-```bash
-just generate
-```
-
 To build the rust code, run
 ```bash
 just build-linux
-just build-android-arm
 ```
 
 To run the app on Linux, simply run
