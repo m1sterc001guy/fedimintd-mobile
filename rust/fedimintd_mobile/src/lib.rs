@@ -28,11 +28,16 @@ pub fn redirect_output(log_file_path: &Path) -> io::Result<()> {
 
 #[frb]
 pub async fn start_fedimintd(path: String) -> anyhow::Result<()> {
-    let log_path = Path::new(&path).join("fedimintd.txt");
+    let fedimintd_dir = Path::new(&path).join("fedimintd_mobile");
+
+    // Create the directory if it doesn't exist
+    std::fs::create_dir_all(&fedimintd_dir)?;
+
+    let log_path = fedimintd_dir.join("fedimintd.txt");
     redirect_output(&log_path)?;
     println!("Starting fedimintd...");
     std::env::set_var("FM_ENABLE_IROH", "true");
-    std::env::set_var("FM_DATA_DIR", path);
+    std::env::set_var("FM_DATA_DIR", fedimintd_dir);
     std::env::set_var("FM_BITCOIN_NETWORK", "bitcoin");
     std::env::set_var("FM_ESPLORA_URL", "https://mempool.space/api");
     // Not sure if this is currently necessary
