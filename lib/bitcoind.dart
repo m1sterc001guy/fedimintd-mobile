@@ -5,41 +5,43 @@ import 'package:fedimintd_mobile/fedimintd.dart';
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-
 import 'package:path_provider/path_provider.dart';
 
-// --------------------- Esplora Screen ---------------------
-class EsploraScreen extends StatefulWidget {
+class BitcoindScreen extends StatefulWidget {
   final NetworkType network;
 
-  const EsploraScreen({super.key, required this.network});
+  const BitcoindScreen({super.key, required this.network});
 
   @override
-  State<EsploraScreen> createState() => _EsploraScreenState();
+  State<BitcoindScreen> createState() => _BitcoindScreenState();
 }
 
-class _EsploraScreenState extends State<EsploraScreen> {
-  late TextEditingController _controller;
+class _BitcoindScreenState extends State<BitcoindScreen> {
+  late TextEditingController _usernameController;
+  late TextEditingController _passwordController;
+  late TextEditingController _urlController;
   bool _isTesting = false;
   bool _connectionSuccessful = false;
 
   @override
   void initState() {
     super.initState();
-    String defaultText = "";
+    String defaultUrl;
     switch (widget.network) {
       case NetworkType.mutinynet:
-        defaultText = "https://mutinynet.com/api";
+        defaultUrl = "https://replaceme.com:38332";
         break;
       case NetworkType.mainnet:
-        defaultText = "https://mempool.space/api";
+        defaultUrl = "https://replaceme.com:8332";
         break;
       case NetworkType.regtest:
-        defaultText = "http://localhost:3000";
+        defaultUrl = "http://localhost:18443";
         break;
     }
-    _controller = TextEditingController(text: defaultText);
+
+    _usernameController = TextEditingController(text: "bitcoin");
+    _passwordController = TextEditingController(text: "bitcoin");
+    _urlController = TextEditingController(text: defaultUrl);
   }
 
   Future<void> _testConnection() async {
@@ -49,8 +51,15 @@ class _EsploraScreenState extends State<EsploraScreen> {
 
     bool success = false;
     try {
-      String esploraUrl = _controller.text;
-      await testEsplora(esploraUrl: esploraUrl, network: widget.network);
+      String username = _usernameController.text;
+      String password = _passwordController.text;
+      String url = _urlController.text;
+      await testBitcoind(
+        username: username,
+        password: password,
+        url: url,
+        network: widget.network,
+      );
       success = true;
     } catch (e) {
       AppLogger.instance.error("Failed to connect to esplora: $e");
@@ -91,8 +100,10 @@ class _EsploraScreenState extends State<EsploraScreen> {
     // Prepare JSON data
     final data = {
       "network": network,
-      "url": _controller.text,
-      "source": "esplora",
+      "username": _usernameController.text,
+      "password": _passwordController.text,
+      "url": _urlController.text,
+      "source": "bitcoind",
     };
 
     // Get the app documents directory
@@ -111,9 +122,11 @@ class _EsploraScreenState extends State<EsploraScreen> {
       MaterialPageRoute(
         builder:
             (_) => PlatformAwareHome(
-              source: BlockchainSource.Esplora,
+              source: BlockchainSource.Bitcoind,
               network: widget.network,
-              esploraUrl: _controller.text,
+              bitcoindUsername: _usernameController.text,
+              bitcoindPassword: _passwordController.text,
+              bitcoindUrl: _urlController.text,
             ),
       ),
       (route) => false, // removes everything behind
@@ -123,15 +136,32 @@ class _EsploraScreenState extends State<EsploraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Esplora Configuration")),
+      appBar: AppBar(title: const Text("Bitcoind Configuration")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              controller: _controller,
+              controller: _usernameController,
               decoration: const InputDecoration(
-                labelText: "Esplora API URL",
+                labelText: "Username",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                labelText: "Password",
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _urlController,
+              decoration: const InputDecoration(
+                labelText: "Bitcoind URL",
                 border: OutlineInputBorder(),
               ),
             ),

@@ -62,7 +62,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.9.0';
 
   @override
-  int get rustContentHash => 1252315202;
+  int get rustContentHash => 248608301;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -73,10 +73,25 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<void> crateStartFedimintdBitcoind({
+    required String dbPath,
+    required NetworkType networkType,
+    required String username,
+    required String password,
+    required String url,
+  });
+
   Future<void> crateStartFedimintdEsplora({
     required String dbPath,
     required NetworkType networkType,
     required String esploraUrl,
+  });
+
+  Future<void> crateTestBitcoind({
+    required String username,
+    required String password,
+    required String url,
+    required NetworkType network,
   });
 
   Future<void> crateTestEsplora({
@@ -94,6 +109,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<void> crateStartFedimintdBitcoind({
+    required String dbPath,
+    required NetworkType networkType,
+    required String username,
+    required String password,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_network_type(networkType, serializer);
+          sse_encode_String(username, serializer);
+          sse_encode_String(password, serializer);
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateStartFedimintdBitcoindConstMeta,
+        argValues: [dbPath, networkType, username, password, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateStartFedimintdBitcoindConstMeta =>
+      const TaskConstMeta(
+        debugName: "start_fedimintd_bitcoind",
+        argNames: ["dbPath", "networkType", "username", "password", "url"],
+      );
+
+  @override
   Future<void> crateStartFedimintdEsplora({
     required String dbPath,
     required NetworkType networkType,
@@ -109,7 +165,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 1,
+            funcId: 2,
             port: port_,
           );
         },
@@ -130,6 +186,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<void> crateTestBitcoind({
+    required String username,
+    required String password,
+    required String url,
+    required NetworkType network,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(username, serializer);
+          sse_encode_String(password, serializer);
+          sse_encode_String(url, serializer);
+          sse_encode_network_type(network, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateTestBitcoindConstMeta,
+        argValues: [username, password, url, network],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateTestBitcoindConstMeta => const TaskConstMeta(
+    debugName: "test_bitcoind",
+    argNames: ["username", "password", "url", "network"],
+  );
+
+  @override
   Future<void> crateTestEsplora({
     required String esploraUrl,
     required NetworkType network,
@@ -143,7 +237,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 4,
             port: port_,
           );
         },

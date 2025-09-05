@@ -19,7 +19,9 @@ void main() async {
 class Start extends StatelessWidget {
   const Start({super.key});
 
-  Future<(BlockchainSource, NetworkType, String)?> _connectionInfo() async {
+  // yes - this is super ugly
+  Future<(BlockchainSource, NetworkType, String?, String?, String?, String?)?>
+  _connectionInfo() async {
     try {
       Directory? dir;
       if (Platform.isAndroid) {
@@ -48,18 +50,20 @@ class Start extends StatelessWidget {
             return null;
         }
 
-        BlockchainSource source;
-        String esploraUrl;
         switch (json["source"] as String) {
           case "esplora":
-            source = BlockchainSource.Esplora;
-            esploraUrl = json["url"] as String;
-            break;
+            BlockchainSource source = BlockchainSource.Esplora;
+            String esploraUrl = json["url"] as String;
+            return (source, network, esploraUrl, null, null, null);
+          case "bitcoind":
+            BlockchainSource source = BlockchainSource.Bitcoind;
+            String username = json["username"] as String;
+            String password = json["password"] as String;
+            String url = json["url"] as String;
+            return (source, network, null, username, password, url);
           default:
             return null;
         }
-
-        return (source, network, esploraUrl);
       } else {
         AppLogger.instance.info("No connection info found, starting UI...");
         return null; // file not found
@@ -75,7 +79,9 @@ class Start extends StatelessWidget {
     return MaterialApp(
       title: 'Fedimint Setup',
       theme: ThemeData.dark(),
-      home: FutureBuilder<(BlockchainSource, NetworkType, String)?>(
+      home: FutureBuilder<
+        (BlockchainSource, NetworkType, String?, String?, String?, String?)?
+      >(
         future: _connectionInfo(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -90,11 +96,23 @@ class Start extends StatelessWidget {
           }
 
           if (snapshot.data != null) {
-            return PlatformAwareHome(
-              source: snapshot.data!.$1,
-              network: snapshot.data!.$2,
-              esploraUrl: snapshot.data!.$3,
-            );
+            BlockchainSource source = snapshot.data!.$1;
+            switch (source) {
+              case BlockchainSource.Esplora:
+                return PlatformAwareHome(
+                  source: snapshot.data!.$1,
+                  network: snapshot.data!.$2,
+                  esploraUrl: snapshot.data!.$3,
+                );
+              case BlockchainSource.Bitcoind:
+                return PlatformAwareHome(
+                  source: snapshot.data!.$1,
+                  network: snapshot.data!.$2,
+                  bitcoindUsername: snapshot.data!.$4,
+                  bitcoindPassword: snapshot.data!.$5,
+                  bitcoindUrl: snapshot.data!.$6,
+                );
+            }
           } else {
             return const NetworkSelectionScreen();
           }

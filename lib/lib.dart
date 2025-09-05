@@ -19,11 +19,37 @@ Future<void> startFedimintdEsplora({
   esploraUrl: esploraUrl,
 );
 
+Future<void> startFedimintdBitcoind({
+  required String dbPath,
+  required NetworkType networkType,
+  required String username,
+  required String password,
+  required String url,
+}) => RustLib.instance.api.crateStartFedimintdBitcoind(
+  dbPath: dbPath,
+  networkType: networkType,
+  username: username,
+  password: password,
+  url: url,
+);
+
 Future<void> testEsplora({
   required String esploraUrl,
   required NetworkType network,
 }) => RustLib.instance.api.crateTestEsplora(
   esploraUrl: esploraUrl,
+  network: network,
+);
+
+Future<void> testBitcoind({
+  required String username,
+  required String password,
+  required String url,
+  required NetworkType network,
+}) => RustLib.instance.api.crateTestBitcoind(
+  username: username,
+  password: password,
+  url: url,
   network: network,
 );
 

@@ -2359,6 +2359,7 @@ name = "fedimintd_mobile"
 version = "0.1.0"
 dependencies = [
  "bitcoin",
+ "bitcoincore-rpc",
  "esplora-client 0.12.1",
  "fedimint-build",
  "fedimint-core",

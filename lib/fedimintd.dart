@@ -13,11 +13,17 @@ class PlatformAwareHome extends StatefulWidget {
   final BlockchainSource source;
   final NetworkType network;
   final String? esploraUrl;
+  final String? bitcoindUsername;
+  final String? bitcoindPassword;
+  final String? bitcoindUrl;
   const PlatformAwareHome({
     super.key,
     required this.source,
     required this.network,
     this.esploraUrl,
+    this.bitcoindUsername,
+    this.bitcoindPassword,
+    this.bitcoindUrl,
   });
 
   @override
@@ -45,8 +51,36 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
         esploraUrl: esploraUrl,
       );
     } catch (e) {
-      print("Could not start fedimintd: $e");
-      AppLogger.instance.error("Could not start fedimintd: $e");
+      AppLogger.instance.error("Could not start fedimintd using esplora: $e");
+    }
+  }
+
+  Future<void> _fedimintdBitcoind(
+    NetworkType network,
+    String username,
+    String password,
+    String url,
+  ) async {
+    try {
+      final Directory? dir;
+      if (Platform.isAndroid) {
+        dir = await getExternalStorageDirectory();
+      } else {
+        dir = await getApplicationDocumentsDirectory();
+      }
+
+      AppLogger.instance.info(
+        "Starting fedimintd with directory: ${dir!.path} Bitcoind URL: $url",
+      );
+      await startFedimintdBitcoind(
+        dbPath: dir.path,
+        networkType: network,
+        username: username,
+        password: password,
+        url: url,
+      );
+    } catch (e) {
+      AppLogger.instance.error("Could not start fedimintd using bitcoind: $e");
     }
   }
 
@@ -56,10 +90,17 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
 
     switch (widget.source) {
       case BlockchainSource.Esplora:
+        AppLogger.instance.info("PlatformHomeAware started with ESPLORA");
         _fedimintdEsplora(widget.network, widget.esploraUrl!);
         break;
       case BlockchainSource.Bitcoind:
-        AppLogger.instance.info("Bitcoind not supported yet");
+        AppLogger.instance.info("PlatformHomeAware started with BITCOIND");
+        _fedimintdBitcoind(
+          widget.network,
+          widget.bitcoindUsername!,
+          widget.bitcoindPassword!,
+          widget.bitcoindUrl!,
+        );
         break;
     }
 
@@ -69,9 +110,10 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
   }
 
   Future<void> _launchInBrowser() async {
-    print("Launching $_url in browser...");
+    await Future.delayed(const Duration(seconds: 1));
+    AppLogger.instance.info("Launching $_url in browser...");
     if (!await launchUrl(_url, mode: LaunchMode.externalApplication)) {
-      print('Could not launch $_url');
+      AppLogger.instance.error('Could not launch $_url');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fedimintd_mobile/bitcoind.dart';
 import 'package:fedimintd_mobile/esplora.dart';
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:flutter/material.dart';
@@ -308,7 +309,11 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
                         } else {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => BitcoindScreen()),
+                            MaterialPageRoute(
+                              builder:
+                                  (_) =>
+                                      BitcoindScreen(network: widget.network),
+                            ),
                           );
                         }
                       },
@@ -316,67 +321,6 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
                 minimumSize: const Size.fromHeight(50),
               ),
               child: const Text("Next"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// --------------------- Bitcoind Screen ---------------------
-class BitcoindScreen extends StatelessWidget {
-  final TextEditingController _userController = TextEditingController();
-  final TextEditingController _passController = TextEditingController();
-  final TextEditingController _urlController = TextEditingController();
-
-  BitcoindScreen({super.key});
-
-  void _startFedimintd() {
-    print(
-      "Starting Fedimintd with Bitcoind username: ${_userController.text}, password: ${_passController.text}, url: ${_urlController.text}",
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Bitcoind Configuration")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _userController,
-              decoration: const InputDecoration(
-                labelText: "Username",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passController,
-              decoration: const InputDecoration(
-                labelText: "Password",
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: "Bitcoind URL",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _startFedimintd,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Text("Start Fedimintd"),
             ),
           ],
         ),
