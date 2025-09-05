@@ -62,7 +62,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.9.0';
 
   @override
-  int get rustContentHash => -1284860208;
+  int get rustContentHash => 248608301;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -73,7 +73,31 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<void> crateStartFedimintd({required String path});
+  Future<void> crateStartFedimintdBitcoind({
+    required String dbPath,
+    required NetworkType networkType,
+    required String username,
+    required String password,
+    required String url,
+  });
+
+  Future<void> crateStartFedimintdEsplora({
+    required String dbPath,
+    required NetworkType networkType,
+    required String esploraUrl,
+  });
+
+  Future<void> crateTestBitcoind({
+    required String username,
+    required String password,
+    required String url,
+    required NetworkType network,
+  });
+
+  Future<void> crateTestEsplora({
+    required String esploraUrl,
+    required NetworkType network,
+  });
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -85,12 +109,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<void> crateStartFedimintd({required String path}) {
+  Future<void> crateStartFedimintdBitcoind({
+    required String dbPath,
+    required NetworkType networkType,
+    required String username,
+    required String password,
+    required String url,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(path, serializer);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_network_type(networkType, serializer);
+          sse_encode_String(username, serializer);
+          sse_encode_String(password, serializer);
+          sse_encode_String(url, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -102,15 +136,126 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
         ),
-        constMeta: kCrateStartFedimintdConstMeta,
-        argValues: [path],
+        constMeta: kCrateStartFedimintdBitcoindConstMeta,
+        argValues: [dbPath, networkType, username, password, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateStartFedimintdConstMeta =>
-      const TaskConstMeta(debugName: "start_fedimintd", argNames: ["path"]);
+  TaskConstMeta get kCrateStartFedimintdBitcoindConstMeta =>
+      const TaskConstMeta(
+        debugName: "start_fedimintd_bitcoind",
+        argNames: ["dbPath", "networkType", "username", "password", "url"],
+      );
+
+  @override
+  Future<void> crateStartFedimintdEsplora({
+    required String dbPath,
+    required NetworkType networkType,
+    required String esploraUrl,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_network_type(networkType, serializer);
+          sse_encode_String(esploraUrl, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateStartFedimintdEsploraConstMeta,
+        argValues: [dbPath, networkType, esploraUrl],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateStartFedimintdEsploraConstMeta => const TaskConstMeta(
+    debugName: "start_fedimintd_esplora",
+    argNames: ["dbPath", "networkType", "esploraUrl"],
+  );
+
+  @override
+  Future<void> crateTestBitcoind({
+    required String username,
+    required String password,
+    required String url,
+    required NetworkType network,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(username, serializer);
+          sse_encode_String(password, serializer);
+          sse_encode_String(url, serializer);
+          sse_encode_network_type(network, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateTestBitcoindConstMeta,
+        argValues: [username, password, url, network],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateTestBitcoindConstMeta => const TaskConstMeta(
+    debugName: "test_bitcoind",
+    argNames: ["username", "password", "url", "network"],
+  );
+
+  @override
+  Future<void> crateTestEsplora({
+    required String esploraUrl,
+    required NetworkType network,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(esploraUrl, serializer);
+          sse_encode_network_type(network, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateTestEsploraConstMeta,
+        argValues: [esploraUrl, network],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateTestEsploraConstMeta => const TaskConstMeta(
+    debugName: "test_esplora",
+    argNames: ["esploraUrl", "network"],
+  );
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
@@ -125,9 +270,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  NetworkType dco_decode_network_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetworkType.values[raw as int];
   }
 
   @protected
@@ -157,10 +314,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  NetworkType sse_decode_network_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return NetworkType.values[inner];
   }
 
   @protected
@@ -172,12 +342,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_decode_unit(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-  }
-
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
   }
 
   @protected
@@ -202,6 +366,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
+  }
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
     SseSerializer serializer,
@@ -209,6 +379,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_network_type(NetworkType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -220,12 +396,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-  }
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
   }
 
   @protected

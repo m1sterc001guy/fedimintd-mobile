@@ -6,5 +6,51 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-Future<void> startFedimintd({required String path}) =>
-    RustLib.instance.api.crateStartFedimintd(path: path);
+// These functions are ignored because they are not marked as `pub`: `redirect_output`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `eq`, `fmt`
+
+Future<void> startFedimintdEsplora({
+  required String dbPath,
+  required NetworkType networkType,
+  required String esploraUrl,
+}) => RustLib.instance.api.crateStartFedimintdEsplora(
+  dbPath: dbPath,
+  networkType: networkType,
+  esploraUrl: esploraUrl,
+);
+
+Future<void> startFedimintdBitcoind({
+  required String dbPath,
+  required NetworkType networkType,
+  required String username,
+  required String password,
+  required String url,
+}) => RustLib.instance.api.crateStartFedimintdBitcoind(
+  dbPath: dbPath,
+  networkType: networkType,
+  username: username,
+  password: password,
+  url: url,
+);
+
+Future<void> testEsplora({
+  required String esploraUrl,
+  required NetworkType network,
+}) => RustLib.instance.api.crateTestEsplora(
+  esploraUrl: esploraUrl,
+  network: network,
+);
+
+Future<void> testBitcoind({
+  required String username,
+  required String password,
+  required String url,
+  required NetworkType network,
+}) => RustLib.instance.api.crateTestBitcoind(
+  username: username,
+  password: password,
+  url: url,
+  network: network,
+);
+
+enum NetworkType { mutinynet, regtest, mainnet }
