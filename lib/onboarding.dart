@@ -1,4 +1,10 @@
+import 'dart:io';
+
+import 'package:fedimintd_mobile/esplora.dart';
+import 'package:fedimintd_mobile/lib.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_background/flutter_background.dart';
 
 class Onboarding extends StatelessWidget {
   const Onboarding({super.key});
@@ -90,6 +96,75 @@ class SelectionCard extends StatelessWidget {
   }
 }
 
+const platform = MethodChannel('io.fedimintd/settings');
+
+Future<void> openBatterySettings() async {
+  try {
+    await platform.invokeMethod('openBatterySettings');
+  } on PlatformException catch (e) {
+    print("Failed to open battery settings: ${e.message}");
+  }
+}
+
+Future<bool> enableBackgroundExecution(BuildContext context) async {
+  final androidConfig = FlutterBackgroundAndroidConfig(
+    notificationTitle: "Fedimint",
+    notificationText: "fedimintd is running in the background",
+    notificationImportance: AndroidNotificationImportance.normal,
+    enableWifiLock: true,
+  );
+
+  final hasPermissions = await FlutterBackground.hasPermissions;
+
+  if (!hasPermissions) {
+    if (context.mounted) {
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => AlertDialog(
+              title: const Text("Background Permission Required"),
+              content: const Text(
+                "This app needs permission to run in the background in order to function. "
+                "Please enable background execution or exit.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: const Text("Exit"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                    openBatterySettings();
+                  },
+                  child: const Text("Open Settings"),
+                ),
+              ],
+            ),
+      );
+
+      if (result != true) {
+        // Exit the app if the user chooses "Exit" or dismisses
+        exit(0);
+      }
+    }
+    return false;
+  }
+
+  final initialized = await FlutterBackground.initialize(
+    androidConfig: androidConfig,
+  );
+  if (initialized) {
+    await FlutterBackground.enableBackgroundExecution();
+    return true;
+  }
+
+  return false;
+}
+
 // --------------------- Network Selection ---------------------
 class NetworkSelectionScreen extends StatefulWidget {
   const NetworkSelectionScreen({super.key});
@@ -99,7 +174,18 @@ class NetworkSelectionScreen extends StatefulWidget {
 }
 
 class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
-  String? _selectedNetwork;
+  NetworkType? _selectedNetwork;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (!Platform.isLinux) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        enableBackgroundExecution(context);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,19 +199,29 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
               icon: Icons.public,
               title: "Mutinynet",
               description: "Test network for experimenting.",
-              isSelected: _selectedNetwork == "Mutinynet",
+              isSelected: _selectedNetwork == NetworkType.mutinynet,
               onTap: () {
-                setState(() => _selectedNetwork = "Mutinynet");
+                setState(() => _selectedNetwork = NetworkType.mutinynet);
+              },
+            ),
+            const SizedBox(height: 12),
+            SelectionCard(
+              icon: Icons.link,
+              title: "Regtest",
+              description: "Local network used for testing.",
+              isSelected: _selectedNetwork == NetworkType.regtest,
+              onTap: () {
+                setState(() => _selectedNetwork = NetworkType.regtest);
               },
             ),
             const SizedBox(height: 12),
             SelectionCard(
               icon: Icons.link,
               title: "Mainnet",
-              description: "The real Bitcoin network.",
-              isSelected: _selectedNetwork == "Mainnet",
+              description: "Setup a guardian on the Bitcoin network.",
+              isSelected: _selectedNetwork == NetworkType.mainnet,
               onTap: () {
-                setState(() => _selectedNetwork = "Mainnet");
+                setState(() => _selectedNetwork = NetworkType.mainnet);
               },
             ),
             const Spacer(),
@@ -144,6 +240,9 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                           ),
                         );
                       },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
               child: const Text("Next"),
             ),
           ],
@@ -155,7 +254,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
 
 // --------------------- Backend Selection ---------------------
 class BackendSelectionScreen extends StatefulWidget {
-  final String network;
+  final NetworkType network;
   const BackendSelectionScreen({super.key, required this.network});
 
   @override
@@ -186,7 +285,7 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
             SelectionCard(
               icon: Icons.storage,
               title: "Bitcoind",
-              description: "Use a full Bitcoin node backend.",
+              description: "Use your own full Bitcoin node backend.",
               isSelected: _selectedBackend == "Bitcoind",
               onTap: () {
                 setState(() => _selectedBackend = "Bitcoind");
@@ -201,7 +300,10 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
                         if (_selectedBackend == "Esplora") {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => EsploraScreen()),
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => EsploraScreen(network: widget.network),
+                            ),
                           );
                         } else {
                           Navigator.push(
@@ -210,46 +312,10 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
                           );
                         }
                       },
-              child: const Text("Next"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// --------------------- Esplora Screen ---------------------
-class EsploraScreen extends StatelessWidget {
-  final TextEditingController _controller = TextEditingController(
-    text: "https://mempool.space/api",
-  );
-
-  EsploraScreen({super.key});
-
-  void _startFedimintd() {
-    print("Starting Fedimintd with Esplora URL: ${_controller.text}");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Esplora Configuration")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                labelText: "Esplora API URL",
-                border: OutlineInputBorder(),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
               ),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _startFedimintd,
-              child: const Text("Start Fedimintd"),
+              child: const Text("Next"),
             ),
           ],
         ),
@@ -307,6 +373,9 @@ class BitcoindScreen extends StatelessWidget {
             const Spacer(),
             ElevatedButton(
               onPressed: _startFedimintd,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
               child: const Text("Start Fedimintd"),
             ),
           ],

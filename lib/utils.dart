@@ -16,7 +16,7 @@ class AppLogger {
     } else {
       dir = await getApplicationDocumentsDirectory();
     }
-    _logFile = File('${dir!.path}/fedimintd/fedimintd.txt');
+    _logFile = File('${dir!.path}/fedimintd_mobile/fedimintd.txt');
 
     if (!(await _logFile.exists())) {
       await _logFile.create(recursive: true);

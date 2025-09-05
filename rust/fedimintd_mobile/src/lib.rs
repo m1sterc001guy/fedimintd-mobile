@@ -2,12 +2,15 @@
 
 mod frb_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 
-use std::{fs::OpenOptions, io, os::fd::AsRawFd, path::Path};
+use std::{fmt, fs::OpenOptions, io, os::fd::AsRawFd, path::Path};
 
-use fedimint_core::{anyhow, fedimint_build_code_version_env};
+use fedimint_core::{
+    anyhow::{self, ensure},
+    fedimint_build_code_version_env,
+};
 use flutter_rust_bridge::frb;
 
-pub fn redirect_output(log_file_path: &Path) -> io::Result<()> {
+fn redirect_output(log_file_path: &Path) -> io::Result<()> {
     let file = OpenOptions::new()
         .create(true)
         .append(true)
@@ -26,9 +29,31 @@ pub fn redirect_output(log_file_path: &Path) -> io::Result<()> {
     Ok(())
 }
 
+#[derive(Eq, PartialEq)]
+enum NetworkType {
+    Mutinynet,
+    Regtest,
+    Mainnet,
+}
+
+impl fmt::Display for NetworkType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            NetworkType::Mutinynet => "signet",
+            NetworkType::Regtest => "regtest",
+            NetworkType::Mainnet => "bitcoin",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[frb]
-pub async fn start_fedimintd(path: String) -> anyhow::Result<()> {
-    let fedimintd_dir = Path::new(&path).join("fedimintd_mobile");
+pub async fn start_fedimintd_esplora(
+    db_path: String,
+    network_type: NetworkType,
+    esplora_url: String,
+) -> anyhow::Result<()> {
+    let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
 
     // Create the directory if it doesn't exist
     std::fs::create_dir_all(&fedimintd_dir)?;
@@ -38,8 +63,8 @@ pub async fn start_fedimintd(path: String) -> anyhow::Result<()> {
     println!("Starting fedimintd...");
     std::env::set_var("FM_ENABLE_IROH", "true");
     std::env::set_var("FM_DATA_DIR", fedimintd_dir);
-    std::env::set_var("FM_BITCOIN_NETWORK", "bitcoin");
-    std::env::set_var("FM_ESPLORA_URL", "https://mempool.space/api");
+    std::env::set_var("FM_BITCOIN_NETWORK", &format!("{network_type}"));
+    std::env::set_var("FM_ESPLORA_URL", esplora_url);
     // Not sure if this is currently necessary
     std::env::set_var("FM_BIND_UI", "0.0.0.0:8175");
     fedimintd::run(
@@ -48,4 +73,28 @@ pub async fn start_fedimintd(path: String) -> anyhow::Result<()> {
         None,
     )
     .await
+}
+
+#[frb]
+pub async fn test_esplora(esplora_url: String, network: NetworkType) -> anyhow::Result<()> {
+    let client = esplora_client::Builder::new(&esplora_url)
+        .max_retries(0)
+        .build_async()?;
+    let genesis_hash = client.get_block_hash(0).await?;
+    let esplora_network = match genesis_hash.to_string().as_str() {
+        // Mainnet
+        "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f" => NetworkType::Mainnet,
+        // Mutinynet
+        "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6" => {
+            NetworkType::Mutinynet
+        }
+        // Regtest
+        "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206" => NetworkType::Regtest,
+        h => {
+            println!("Unsupported block hash: {h}");
+            return Err(anyhow::anyhow!("Unsupported genesis block hash"));
+        }
+    };
+    ensure!(network == esplora_network);
+    Ok(())
 }

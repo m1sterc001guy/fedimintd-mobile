@@ -6,5 +6,25 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-Future<void> startFedimintd({required String path}) =>
-    RustLib.instance.api.crateStartFedimintd(path: path);
+// These functions are ignored because they are not marked as `pub`: `redirect_output`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `eq`, `fmt`
+
+Future<void> startFedimintdEsplora({
+  required String dbPath,
+  required NetworkType networkType,
+  required String esploraUrl,
+}) => RustLib.instance.api.crateStartFedimintdEsplora(
+  dbPath: dbPath,
+  networkType: networkType,
+  esploraUrl: esploraUrl,
+);
+
+Future<void> testEsplora({
+  required String esploraUrl,
+  required NetworkType network,
+}) => RustLib.instance.api.crateTestEsplora(
+  esploraUrl: esploraUrl,
+  network: network,
+);
+
+enum NetworkType { mutinynet, regtest, mainnet }

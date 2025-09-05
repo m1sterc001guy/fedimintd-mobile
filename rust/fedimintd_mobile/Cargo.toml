@@ -8,13 +8,18 @@ crate-type = ["cdylib"]
 
 [dependencies]
 bitcoin = { version = "0.32.6", features = ["serde"] }
-fedimint-core = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.0" }
-fedimintd = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.0" }
+esplora-client = { version = "0.12.0", default-features = false, features = [
+  "async-https-rustls",
+  "async",
+  "tokio",
+] }
+fedimint-core = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.1" }
+fedimintd = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.1" }
 flutter_rust_bridge = "=2.9.0"
 libc = "0.2"
 
 [build-dependencies]
-fedimint-build = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.0" }
+fedimint-build = { git = "https://github.com/fedimint/fedimint", tag = "v0.8.1" }
 
 [profile.dev.package]
 tikv-jemalloc-sys = { opt-level = 3 }
