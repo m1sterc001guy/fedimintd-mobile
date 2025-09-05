@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fedimintd_mobile/frb_generated.dart';
 import 'package:fedimintd_mobile/lib.dart';
+import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,8 +15,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.init();
   await RustLib.init();
-  _fedimintd();
-  runApp(const MyApp());
+  runApp(const Onboarding());
+  //_fedimintd();
+  //runApp(const MyApp());
 }
 
 const platform = MethodChannel('io.fedimintd/settings');
