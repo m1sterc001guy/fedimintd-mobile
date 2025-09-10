@@ -1,4 +1,4 @@
-package io.fedimintd
+package org.fedimint.mobile
 
 import android.content.Intent
 import android.os.Build
@@ -9,7 +9,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "io.fedimintd/settings"
+    private val CHANNEL = "org.fedimint.mobile/settings"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

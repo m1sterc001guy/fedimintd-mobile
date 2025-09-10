@@ -14,7 +14,7 @@
         android:networkSecurityConfig="@xml/network_security_config">
 
         <service
-            android:name="io.fedimintd"
+            android:name="org.fedimint.mobile"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
         
