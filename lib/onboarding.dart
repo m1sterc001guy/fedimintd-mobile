@@ -97,7 +97,7 @@ class SelectionCard extends StatelessWidget {
   }
 }
 
-const platform = MethodChannel('io.fedimintd/settings');
+const platform = MethodChannel('org.fedimint.mobile/settings');
 
 Future<void> openBatterySettings() async {
   try {
