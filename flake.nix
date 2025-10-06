@@ -1,6 +1,6 @@
 {
   inputs = {
-    fedimint.url = "github:fedimint/fedimint?rev=7e6acf32b2f47007d4ba761e4ee8dc77a23b0168";
+    fedimint.url = "github:fedimint/fedimint?rev=836ffa88ba1ac8345082a2749711b1d4d5871ac6";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixgl.url = "github:guibou/nixGL";
@@ -25,8 +25,7 @@
             platform-tools
             platforms-android-35
             # Other useful packages for a development environment.
-            #ndk-26-1-10909125
-            ndk-27-0-12077973
+            ndk-25-2-9519653
             # skiaparser-3
             # sources-android-34
           ]
@@ -110,8 +109,8 @@
               export ANDROID_SDK_ROOT=${androidPkgs.android-sdk}/share/android-sdk
               # Needs to be writable directory
               export ANDROID_SDK_HOME=$HOME
-              export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.0.12077973
-              export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973
+              export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/25.2.9519653
+              export ANDROID_NDK_HOME=$ANDROID_NDK_ROOT
               #export JAVA_HOME=/opt/android-studio/jbr
               export JAVA_HOME=${pkgs.jdk21}
 
