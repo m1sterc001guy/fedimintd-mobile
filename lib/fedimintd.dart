@@ -120,13 +120,15 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
   @override
   Widget build(BuildContext context) {
     if (Platform.isLinux) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Open in Browser')),
-        body: Center(
-          child: Text(
-            'Please open your web browser and visit:\n\n$_url',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18),
+      return SafeArea(
+        child: Scaffold(
+          appBar: AppBar(title: const Text('Open in Browser')),
+          body: Center(
+            child: Text(
+              'Please open your web browser and visit:\n\n$_url',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18),
+            ),
           ),
         ),
       );
@@ -177,29 +179,31 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(""),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _refreshTriggered = true;
-              _controller.reload();
-            },
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const LinearProgressIndicator(
-              minHeight: 2,
-              backgroundColor: Colors.transparent,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(""),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                _refreshTriggered = true;
+                _controller.reload();
+              },
+              tooltip: 'Refresh',
             ),
-        ],
+          ],
+        ),
+        body: Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            if (_isLoading)
+              const LinearProgressIndicator(
+                minHeight: 2,
+                backgroundColor: Colors.transparent,
+              ),
+          ],
+        ),
       ),
     );
   }

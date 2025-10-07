@@ -135,63 +135,65 @@ class _BitcoindScreenState extends State<BitcoindScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Bitcoind Configuration")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(
-                labelText: "Username",
-                border: OutlineInputBorder(),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Bitcoind Configuration")),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: "Username",
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: "Password",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: "Password",
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
               ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: "Bitcoind URL",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _urlController,
+                decoration: const InputDecoration(
+                  labelText: "Bitcoind URL",
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _isTesting ? null : _testConnection,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: _isTesting ? null : _testConnection,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child:
+                    _isTesting
+                        ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : const Text("Test Connection"),
               ),
-              child:
-                  _isTesting
-                      ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                      : const Text("Test Connection"),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _connectionSuccessful ? _startFedimintd : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _connectionSuccessful ? _startFedimintd : null,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child: const Text("Save Connection Info"),
               ),
-              child: const Text("Save Connection Info"),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

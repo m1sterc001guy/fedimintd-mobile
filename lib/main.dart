@@ -79,44 +79,46 @@ class Start extends StatelessWidget {
     return MaterialApp(
       title: 'Fedimint Setup',
       theme: ThemeData.dark(),
-      home: FutureBuilder<
-        (BlockchainSource, NetworkType, String?, String?, String?, String?)?
-      >(
-        future: _connectionInfo(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          if (snapshot.hasError) {
-            return const Scaffold(
-              body: Center(child: Text("Error checking folder")),
-            );
-          }
-
-          if (snapshot.data != null) {
-            BlockchainSource source = snapshot.data!.$1;
-            switch (source) {
-              case BlockchainSource.Esplora:
-                return PlatformAwareHome(
-                  source: snapshot.data!.$1,
-                  network: snapshot.data!.$2,
-                  esploraUrl: snapshot.data!.$3,
-                );
-              case BlockchainSource.Bitcoind:
-                return PlatformAwareHome(
-                  source: snapshot.data!.$1,
-                  network: snapshot.data!.$2,
-                  bitcoindUsername: snapshot.data!.$4,
-                  bitcoindPassword: snapshot.data!.$5,
-                  bitcoindUrl: snapshot.data!.$6,
-                );
+      home: SafeArea(
+        child: FutureBuilder<
+          (BlockchainSource, NetworkType, String?, String?, String?, String?)?
+        >(
+          future: _connectionInfo(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
             }
-          } else {
-            return const NetworkSelectionScreen();
-          }
-        },
+            if (snapshot.hasError) {
+              return const Scaffold(
+                body: Center(child: Text("Error checking folder")),
+              );
+            }
+
+            if (snapshot.data != null) {
+              BlockchainSource source = snapshot.data!.$1;
+              switch (source) {
+                case BlockchainSource.Esplora:
+                  return PlatformAwareHome(
+                    source: snapshot.data!.$1,
+                    network: snapshot.data!.$2,
+                    esploraUrl: snapshot.data!.$3,
+                  );
+                case BlockchainSource.Bitcoind:
+                  return PlatformAwareHome(
+                    source: snapshot.data!.$1,
+                    network: snapshot.data!.$2,
+                    bitcoindUsername: snapshot.data!.$4,
+                    bitcoindPassword: snapshot.data!.$5,
+                    bitcoindUrl: snapshot.data!.$6,
+                  );
+              }
+            } else {
+              return const NetworkSelectionScreen();
+            }
+          },
+        ),
       ),
     );
   }
