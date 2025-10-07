@@ -122,46 +122,48 @@ class _EsploraScreenState extends State<EsploraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Esplora Configuration")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                labelText: "Esplora API URL",
-                border: OutlineInputBorder(),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Esplora Configuration")),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  labelText: "Esplora API URL",
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _isTesting ? null : _testConnection,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: _isTesting ? null : _testConnection,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child:
+                    _isTesting
+                        ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : const Text("Test Connection"),
               ),
-              child:
-                  _isTesting
-                      ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                      : const Text("Test Connection"),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _connectionSuccessful ? _startFedimintd : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _connectionSuccessful ? _startFedimintd : null,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child: const Text("Save Connection Info"),
               ),
-              child: const Text("Save Connection Info"),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

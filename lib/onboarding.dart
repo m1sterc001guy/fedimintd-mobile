@@ -190,63 +190,65 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Select Network")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            SelectionCard(
-              icon: Icons.public,
-              title: "Mutinynet",
-              description: "Test network for experimenting.",
-              isSelected: _selectedNetwork == NetworkType.mutinynet,
-              onTap: () {
-                setState(() => _selectedNetwork = NetworkType.mutinynet);
-              },
-            ),
-            const SizedBox(height: 12),
-            SelectionCard(
-              icon: Icons.link,
-              title: "Regtest",
-              description: "Local network used for testing.",
-              isSelected: _selectedNetwork == NetworkType.regtest,
-              onTap: () {
-                setState(() => _selectedNetwork = NetworkType.regtest);
-              },
-            ),
-            const SizedBox(height: 12),
-            SelectionCard(
-              icon: Icons.link,
-              title: "Mainnet",
-              description: "Setup a guardian on the Bitcoin network.",
-              isSelected: _selectedNetwork == NetworkType.mainnet,
-              onTap: () {
-                setState(() => _selectedNetwork = NetworkType.mainnet);
-              },
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed:
-                  _selectedNetwork == null
-                      ? null
-                      : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (_) => BackendSelectionScreen(
-                                  network: _selectedNetwork!,
-                                ),
-                          ),
-                        );
-                      },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Select Network")),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              SelectionCard(
+                icon: Icons.public,
+                title: "Mutinynet",
+                description: "Test network for experimenting.",
+                isSelected: _selectedNetwork == NetworkType.mutinynet,
+                onTap: () {
+                  setState(() => _selectedNetwork = NetworkType.mutinynet);
+                },
               ),
-              child: const Text("Next"),
-            ),
-          ],
+              const SizedBox(height: 12),
+              SelectionCard(
+                icon: Icons.link,
+                title: "Regtest",
+                description: "Local network used for testing.",
+                isSelected: _selectedNetwork == NetworkType.regtest,
+                onTap: () {
+                  setState(() => _selectedNetwork = NetworkType.regtest);
+                },
+              ),
+              const SizedBox(height: 12),
+              SelectionCard(
+                icon: Icons.link,
+                title: "Mainnet",
+                description: "Setup a guardian on the Bitcoin network.",
+                isSelected: _selectedNetwork == NetworkType.mainnet,
+                onTap: () {
+                  setState(() => _selectedNetwork = NetworkType.mainnet);
+                },
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed:
+                    _selectedNetwork == null
+                        ? null
+                        : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BackendSelectionScreen(
+                                    network: _selectedNetwork!,
+                                  ),
+                            ),
+                          );
+                        },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child: const Text("Next"),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -267,62 +269,65 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Select Backend")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            SelectionCard(
-              icon: Icons.cloud,
-              title: "Esplora",
-              description: "Use Esplora API for blockchain data.",
-              isSelected: _selectedBackend == "Esplora",
-              onTap: () {
-                setState(() => _selectedBackend = "Esplora");
-              },
-            ),
-            const SizedBox(height: 12),
-            SelectionCard(
-              icon: Icons.storage,
-              title: "Bitcoind",
-              description: "Use your own full Bitcoin node backend.",
-              isSelected: _selectedBackend == "Bitcoind",
-              onTap: () {
-                setState(() => _selectedBackend = "Bitcoind");
-              },
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed:
-                  _selectedBackend == null
-                      ? null
-                      : () {
-                        if (_selectedBackend == "Esplora") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => EsploraScreen(network: widget.network),
-                            ),
-                          );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) =>
-                                      BitcoindScreen(network: widget.network),
-                            ),
-                          );
-                        }
-                      },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Select Backend")),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              SelectionCard(
+                icon: Icons.cloud,
+                title: "Esplora",
+                description: "Use Esplora API for blockchain data.",
+                isSelected: _selectedBackend == "Esplora",
+                onTap: () {
+                  setState(() => _selectedBackend = "Esplora");
+                },
               ),
-              child: const Text("Next"),
-            ),
-          ],
+              const SizedBox(height: 12),
+              SelectionCard(
+                icon: Icons.storage,
+                title: "Bitcoind",
+                description: "Use your own full Bitcoin node backend.",
+                isSelected: _selectedBackend == "Bitcoind",
+                onTap: () {
+                  setState(() => _selectedBackend = "Bitcoind");
+                },
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed:
+                    _selectedBackend == null
+                        ? null
+                        : () {
+                          if (_selectedBackend == "Esplora") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) =>
+                                        EsploraScreen(network: widget.network),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) =>
+                                        BitcoindScreen(network: widget.network),
+                              ),
+                            );
+                          }
+                        },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child: const Text("Next"),
+              ),
+            ],
+          ),
         ),
       ),
     );
