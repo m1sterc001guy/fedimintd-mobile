@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fedimintd_mobile/blockchain_config.dart';
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -92,9 +93,30 @@ Future<Directory> getConfigDirectory() async {
   return dir;
 }
 
-/// Write config data to the standard config file location.
-Future<void> writeConfigFile(Map<String, dynamic> data) async {
+/// Write config to the standard config file location.
+Future<void> writeConfigFile(BlockchainConfig config) async {
   final dir = await getConfigDirectory();
   final file = File('${dir.path}/fedimintd_mobile/fedimintd_config.json');
-  await file.writeAsString(jsonEncode(data), flush: true);
+  await file.writeAsString(jsonEncode(config.toJson()), flush: true);
+}
+
+/// Read and parse the config file.
+/// Returns null if not found or invalid.
+Future<BlockchainConfig?> readConfigFile() async {
+  try {
+    final dir = await getConfigDirectory();
+    final file = File('${dir.path}/fedimintd_mobile/fedimintd_config.json');
+
+    if (!await file.exists()) {
+      AppLogger.instance.info("No config file found");
+      return null;
+    }
+
+    final contents = await file.readAsString();
+    final json = jsonDecode(contents) as Map<String, dynamic>;
+    return BlockchainConfig.fromJson(json);
+  } catch (e) {
+    AppLogger.instance.error("Error reading config file: $e");
+    return null;
+  }
 }

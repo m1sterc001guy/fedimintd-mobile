@@ -1,6 +1,8 @@
-import 'package:fedimintd_mobile/fedimintd.dart';
+import 'package:fedimintd_mobile/blockchain_config.dart';
+import 'package:fedimintd_mobile/foreground_service.dart';
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:fedimintd_mobile/utils.dart';
+import 'package:fedimintd_mobile/webview_screen.dart';
 import 'package:flutter/material.dart';
 
 /// Abstract base class for blockchain configuration screens (Esplora, Bitcoind).
@@ -27,23 +29,17 @@ abstract class BlockchainConfigScreenState<T extends BlockchainConfigScreen>
   /// The title shown in the app bar.
   String get appBarTitle;
 
-  /// The blockchain source type (Esplora or Bitcoind).
-  BlockchainSource get blockchainSource;
-
   /// The name used in log messages (e.g., "esplora", "bitcoind").
   String get sourceName;
 
   /// Performs the actual connection test. Should throw on failure.
   Future<void> testConnection();
 
-  /// Builds the config data to be written to the config file.
-  Map<String, dynamic> buildConfigData();
-
   /// Builds the form fields specific to this blockchain source.
   Widget buildFormFields();
 
-  /// Builds the PlatformAwareHome widget with the appropriate parameters.
-  PlatformAwareHome buildPlatformAwareHome();
+  /// Builds the BlockchainConfig with the current form values.
+  BlockchainConfig buildConfig();
 
   // ---- Shared implementation ----
 
@@ -96,13 +92,18 @@ abstract class BlockchainConfigScreenState<T extends BlockchainConfigScreen>
       return;
     }
 
+    final config = buildConfig();
+
     // Write config to file
-    await writeConfigFile(buildConfigData());
+    await writeConfigFile(config);
+
+    // Start foreground service
+    await startForegroundService(config);
 
     if (!mounted) return;
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => buildPlatformAwareHome()),
+      MaterialPageRoute(builder: (_) => const WebViewScreen()),
       (route) => false,
     );
   }

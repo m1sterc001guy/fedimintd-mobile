@@ -1,7 +1,6 @@
+import 'package:fedimintd_mobile/blockchain_config.dart';
 import 'package:fedimintd_mobile/blockchain_config_base.dart';
-import 'package:fedimintd_mobile/fedimintd.dart';
 import 'package:fedimintd_mobile/lib.dart';
-import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 
 class EsploraScreen extends BlockchainConfigScreen {
@@ -16,9 +15,6 @@ class _EsploraScreenState extends BlockchainConfigScreenState<EsploraScreen> {
 
   @override
   String get appBarTitle => "Esplora Configuration";
-
-  @override
-  BlockchainSource get blockchainSource => BlockchainSource.Esplora;
 
   @override
   String get sourceName => "esplora";
@@ -52,21 +48,8 @@ class _EsploraScreenState extends BlockchainConfigScreenState<EsploraScreen> {
   }
 
   @override
-  Map<String, dynamic> buildConfigData() {
-    return {
-      "network": widget.network.displayName,
-      "url": _controller.text,
-      "source": "esplora",
-    };
-  }
-
-  @override
-  PlatformAwareHome buildPlatformAwareHome() {
-    return PlatformAwareHome(
-      source: BlockchainSource.Esplora,
-      network: widget.network,
-      esploraUrl: _controller.text,
-    );
+  BlockchainConfig buildConfig() {
+    return EsploraConfig(network: widget.network, url: _controller.text);
   }
 
   @override

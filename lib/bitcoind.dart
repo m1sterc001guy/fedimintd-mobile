@@ -1,7 +1,6 @@
+import 'package:fedimintd_mobile/blockchain_config.dart';
 import 'package:fedimintd_mobile/blockchain_config_base.dart';
-import 'package:fedimintd_mobile/fedimintd.dart';
 import 'package:fedimintd_mobile/lib.dart';
-import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 
 class BitcoindScreen extends BlockchainConfigScreen {
@@ -18,9 +17,6 @@ class _BitcoindScreenState extends BlockchainConfigScreenState<BitcoindScreen> {
 
   @override
   String get appBarTitle => "Bitcoind Configuration";
-
-  @override
-  BlockchainSource get blockchainSource => BlockchainSource.Bitcoind;
 
   @override
   String get sourceName => "bitcoind";
@@ -63,24 +59,12 @@ class _BitcoindScreenState extends BlockchainConfigScreenState<BitcoindScreen> {
   }
 
   @override
-  Map<String, dynamic> buildConfigData() {
-    return {
-      "network": widget.network.displayName,
-      "username": _usernameController.text,
-      "password": _passwordController.text,
-      "url": _urlController.text,
-      "source": "bitcoind",
-    };
-  }
-
-  @override
-  PlatformAwareHome buildPlatformAwareHome() {
-    return PlatformAwareHome(
-      source: BlockchainSource.Bitcoind,
+  BlockchainConfig buildConfig() {
+    return BitcoindConfig(
       network: widget.network,
-      bitcoindUsername: _usernameController.text,
-      bitcoindPassword: _passwordController.text,
-      bitcoindUrl: _urlController.text,
+      username: _usernameController.text,
+      password: _passwordController.text,
+      url: _urlController.text,
     );
   }
 
