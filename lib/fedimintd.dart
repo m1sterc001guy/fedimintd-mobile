@@ -5,7 +5,6 @@ import 'package:fedimintd_mobile/lib.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -82,15 +81,10 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
 
   Future<void> _fedimintdEsplora(NetworkType network, String esploraUrl) async {
     try {
-      final Directory? dir;
-      if (Platform.isAndroid) {
-        dir = await getExternalStorageDirectory();
-      } else {
-        dir = await getApplicationDocumentsDirectory();
-      }
+      final dir = await getConfigDirectory();
 
       AppLogger.instance.info(
-        "Starting fedimintd with directory: ${dir!.path} Esplora URL: $esploraUrl",
+        "Starting fedimintd with directory: ${dir.path} Esplora URL: $esploraUrl",
       );
       await startFedimintdEsplora(
         dbPath: dir.path,
@@ -109,15 +103,10 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
     String url,
   ) async {
     try {
-      final Directory? dir;
-      if (Platform.isAndroid) {
-        dir = await getExternalStorageDirectory();
-      } else {
-        dir = await getApplicationDocumentsDirectory();
-      }
+      final dir = await getConfigDirectory();
 
       AppLogger.instance.info(
-        "Starting fedimintd with directory: ${dir!.path} Bitcoind URL: $url",
+        "Starting fedimintd with directory: ${dir.path} Bitcoind URL: $url",
       );
       await startFedimintdBitcoind(
         dbPath: dir.path,
@@ -176,12 +165,7 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
   }
 
   Future<void> _initialize() async {
-    final Directory? dir;
-    if (Platform.isAndroid) {
-      dir = await getExternalStorageDirectory();
-    } else {
-      dir = await getApplicationDocumentsDirectory();
-    }
+    final dir = await getConfigDirectory();
 
     switch (widget.source) {
       case BlockchainSource.Esplora:
@@ -190,7 +174,7 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
         await _startForegroundService(
           widget.network,
           widget.esploraUrl!,
-          dir!.path,
+          dir.path,
         );
         break;
       case BlockchainSource.Bitcoind:
