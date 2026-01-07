@@ -1,11 +1,7 @@
-import 'dart:io';
-
 import 'package:fedimintd_mobile/bitcoind.dart';
 import 'package:fedimintd_mobile/esplora.dart';
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_background/flutter_background.dart';
 
 class Onboarding extends StatelessWidget {
   const Onboarding({super.key});
@@ -97,75 +93,6 @@ class SelectionCard extends StatelessWidget {
   }
 }
 
-const platform = MethodChannel('org.fedimint.mobile/settings');
-
-Future<void> openBatterySettings() async {
-  try {
-    await platform.invokeMethod('openBatterySettings');
-  } on PlatformException catch (e) {
-    print("Failed to open battery settings: ${e.message}");
-  }
-}
-
-Future<bool> enableBackgroundExecution(BuildContext context) async {
-  final androidConfig = FlutterBackgroundAndroidConfig(
-    notificationTitle: "Fedimint",
-    notificationText: "fedimintd is running in the background",
-    notificationImportance: AndroidNotificationImportance.normal,
-    enableWifiLock: true,
-  );
-
-  final hasPermissions = await FlutterBackground.hasPermissions;
-
-  if (!hasPermissions) {
-    if (context.mounted) {
-      final result = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder:
-            (context) => AlertDialog(
-              title: const Text("Background Permission Required"),
-              content: const Text(
-                "This app needs permission to run in the background in order to function. "
-                "Please enable background execution or exit.",
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text("Exit"),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                    openBatterySettings();
-                  },
-                  child: const Text("Open Settings"),
-                ),
-              ],
-            ),
-      );
-
-      if (result != true) {
-        // Exit the app if the user chooses "Exit" or dismisses
-        exit(0);
-      }
-    }
-    return false;
-  }
-
-  final initialized = await FlutterBackground.initialize(
-    androidConfig: androidConfig,
-  );
-  if (initialized) {
-    await FlutterBackground.enableBackgroundExecution();
-    return true;
-  }
-
-  return false;
-}
-
 // --------------------- Network Selection ---------------------
 class NetworkSelectionScreen extends StatefulWidget {
   const NetworkSelectionScreen({super.key});
@@ -176,17 +103,6 @@ class NetworkSelectionScreen extends StatefulWidget {
 
 class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
   NetworkType? _selectedNetwork;
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (!Platform.isLinux) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        enableBackgroundExecution(context);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_rust_bridge: 2.9.0
-  flutter_background: ^1.3.0
+  http: ^1.2.0
   path_provider: ^2.1.5
   freezed_annotation: ^3.0.0
   webview_flutter: ^4.13.0
