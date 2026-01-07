@@ -15,6 +15,8 @@ dependencies:
   freezed_annotation: ^3.0.0
   webview_flutter: ^4.13.0
   url_launcher: ^6.3.2
+  flutter_foreground_task: ^8.13.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
