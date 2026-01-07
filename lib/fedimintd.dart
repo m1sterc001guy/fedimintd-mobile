@@ -6,7 +6,6 @@ import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -138,39 +137,12 @@ class _PlatformAwareHomeState extends State<PlatformAwareHome> {
     _initialize();
   }
 
-  Future<bool> _requestNotificationPermission() async {
-    if (Platform.isAndroid) {
-      final status = await Permission.notification.status;
-      if (status.isDenied) {
-        final result = await Permission.notification.request();
-        return result.isGranted;
-      }
-
-      return status.isGranted;
-    }
-
-    return true;
-  }
-
   Future<void> _startForegroundService(
     NetworkType network,
     String esploraUrl,
     String dirPath,
   ) async {
     AppLogger.instance.info('Starting Fedimintd Foreground Service...');
-    final hasPermission = await _requestNotificationPermission();
-
-    if (!hasPermission) {
-      AppLogger.instance.warn('Notification permission denied');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Notification permission required for Fedimintd'),
-          ),
-        );
-      }
-      return;
-    }
 
     await FlutterForegroundTask.saveData(key: 'network', value: network.name);
     await FlutterForegroundTask.saveData(key: 'esploraUrl', value: esploraUrl);

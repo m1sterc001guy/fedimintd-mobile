@@ -75,6 +75,20 @@ class _EsploraScreenState extends State<EsploraScreen> {
   }
 
   void _startFedimintd() async {
+    final hasPermission = await requestNotificationPermission();
+
+    if (!hasPermission) {
+      AppLogger.instance.warn('Notification permission denied');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notification permission required for Fedimintd'),
+          ),
+        );
+      }
+      return;
+    }
+
     String network;
     switch (widget.network) {
       case NetworkType.mutinynet:

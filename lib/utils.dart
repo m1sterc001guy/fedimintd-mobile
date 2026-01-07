@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AppLogger {
   static late final File _logFile;
@@ -44,4 +45,18 @@ class AppLogger {
   void warn(String message) => _log("WARN", message);
   void error(String message) => _log("ERROR", message);
   void debug(String message) => _log("DEBUG", message);
+}
+
+Future<bool> requestNotificationPermission() async {
+  if (Platform.isAndroid) {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      final result = await Permission.notification.request();
+      return result.isGranted;
+    }
+
+    return status.isGranted;
+  }
+
+  return true;
 }
