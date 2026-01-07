@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:fedimintd_mobile/main.dart';
+import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
@@ -58,7 +60,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   setState(() => _isPageLoading = false);
                   if (_refreshTriggered) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Refreshed dashboard')),
+                      const SnackBar(
+                        content: Text('Refreshed dashboard'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
                     );
                     _refreshTriggered = false;
                   }
@@ -118,18 +123,24 @@ class _WebViewScreenState extends State<WebViewScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const FedimintLogo(size: 64),
+              const SizedBox(height: 32),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 64),
               const SizedBox(height: 24),
               const Text(
                 'A critical failure has occurred',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Fedimintd failed to start within the expected time. '
                 'Please close the app and try again.',
-                style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -140,14 +151,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Widget _buildLoadingScreen() {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 24),
-            Text('Starting Fedimintd...', style: TextStyle(fontSize: 16)),
+            const FedimintLogo(size: 80),
+            const SizedBox(height: 32),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            const Text(
+              'Starting Fedimintd...',
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            ),
           ],
         ),
       ),
@@ -155,22 +171,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Widget _buildWebViewScreen() {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(""),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                _refreshTriggered = true;
-                _controller.reload();
-              },
-              tooltip: 'Refresh',
-            ),
-          ],
-        ),
-        body: Stack(
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
           children: [
             WebViewWidget(controller: _controller),
             if (_isPageLoading)

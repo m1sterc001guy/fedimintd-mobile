@@ -1,6 +1,8 @@
 import 'package:fedimintd_mobile/blockchain_config.dart';
 import 'package:fedimintd_mobile/foreground_service.dart';
 import 'package:fedimintd_mobile/lib.dart';
+import 'package:fedimintd_mobile/main.dart';
+import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:fedimintd_mobile/webview_screen.dart';
 import 'package:flutter/material.dart';
@@ -69,9 +71,10 @@ abstract class BlockchainConfigScreenState<T extends BlockchainConfigScreen>
         content: Text(
           success
               ? "Connection successful!"
-              : "Connection failed. Check the URL.",
+              : "Connection failed. Please check your settings.",
         ),
-        backgroundColor: success ? Colors.green : Colors.red,
+        backgroundColor: success ? AppColors.success : AppColors.error,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
       ),
     );
   }
@@ -86,6 +89,7 @@ abstract class BlockchainConfigScreenState<T extends BlockchainConfigScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Notification permission required for Fedimintd'),
+            margin: EdgeInsets.fromLTRB(16, 0, 16, 80),
           ),
         );
       }
@@ -108,48 +112,84 @@ abstract class BlockchainConfigScreenState<T extends BlockchainConfigScreen>
     );
   }
 
-  /// Builds the test connection button with loading indicator.
+  /// Builds the test connection button (outlined style).
   Widget buildTestConnectionButton() {
-    return ElevatedButton(
-      onPressed: isTesting ? null : handleTestConnection,
-      style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-      child:
-          isTesting
-              ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
-              : const Text("Test Connection"),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: isTesting ? null : handleTestConnection,
+        child:
+            isTesting
+                ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                : const Text("Test Connection"),
+      ),
     );
   }
 
-  /// Builds the save/start button.
+  /// Builds the save/continue button (filled style).
   Widget buildSaveButton() {
-    return ElevatedButton(
-      onPressed: connectionSuccessful ? startFedimintd : null,
-      style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-      child: const Text("Save Connection Info"),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: connectionSuccessful ? startFedimintd : null,
+        child: const Text("Save & Continue"),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(title: Text(appBarTitle)),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: AppBar(title: Text(appBarTitle)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              buildFormFields(),
-              const Spacer(),
-              buildTestConnectionButton(),
               const SizedBox(height: 16),
-              buildSaveButton(),
+              // Logo
+              const FedimintLogo(size: 48),
+              const SizedBox(height: 24),
+              // Title
+              Text(
+                appBarTitle,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Configure your $sourceName connection",
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              // Form card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      buildFormFields(),
+                      const SizedBox(height: 24),
+                      buildTestConnectionButton(),
+                      const SizedBox(height: 12),
+                      buildSaveButton(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

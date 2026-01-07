@@ -1,4 +1,5 @@
 import 'package:fedimintd_mobile/foreground_service.dart';
+import 'package:fedimintd_mobile/main.dart';
 import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:fedimintd_mobile/webview_screen.dart';
@@ -16,7 +17,6 @@ class StartupScreen extends StatefulWidget {
 }
 
 class _StartupScreenState extends State<StartupScreen> {
-  bool _isLoading = true;
   String? _error;
 
   @override
@@ -51,7 +51,6 @@ class _StartupScreenState extends State<StartupScreen> {
       AppLogger.instance.error('Startup failed: $e');
       if (!mounted) return;
       setState(() {
-        _isLoading = false;
         _error = 'Failed to start: $e';
       });
     }
@@ -63,22 +62,59 @@ class _StartupScreenState extends State<StartupScreen> {
       return Scaffold(
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const FedimintLogo(size: 64),
+                const SizedBox(height: 32),
+                const Icon(
+                  Icons.error_outline,
+                  color: AppColors.error,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Startup Error',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       );
     }
 
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    // Fallback (should not reach here)
-    return const Scaffold(body: Center(child: Text('Initializing...')));
+    // Loading state
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const FedimintLogo(size: 80),
+            const SizedBox(height: 32),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            Text(
+              'Loading...',
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

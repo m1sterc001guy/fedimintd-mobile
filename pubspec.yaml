@@ -28,6 +28,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/fedimint.png
+    - assets/images/fedimint-icon.png
 
 flutter_launcher_icons:
   android: true

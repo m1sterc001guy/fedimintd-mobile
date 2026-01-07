@@ -1,22 +1,26 @@
 import 'package:fedimintd_mobile/bitcoind.dart';
 import 'package:fedimintd_mobile/esplora.dart';
 import 'package:fedimintd_mobile/lib.dart';
+import 'package:fedimintd_mobile/main.dart';
 import 'package:flutter/material.dart';
 
-class Onboarding extends StatelessWidget {
-  const Onboarding({super.key});
+/// Reusable Fedimint logo widget
+class FedimintLogo extends StatelessWidget {
+  final double size;
+
+  const FedimintLogo({super.key, this.size = 64});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Fedimint Setup',
-      theme: ThemeData.dark(),
-      home: const NetworkSelectionScreen(),
+    return Image.asset(
+      'assets/images/fedimint-icon.png',
+      width: size,
+      height: size,
     );
   }
 }
 
-// --------------------- Selection Card ---------------------
+/// Selection card widget for choosing options (network, backend, etc.)
 class SelectionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -35,29 +39,38 @@ class SelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: Ink(
         decoration: BoxDecoration(
           color:
-              isSelected
-                  ? theme.colorScheme.primary.withOpacity(0.1)
-                  : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+              isSelected ? AppColors.primary.withAlpha(25) : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.primary.withOpacity(0.2),
+            color: isSelected ? AppColors.primary : AppColors.border,
             width: isSelected ? 2 : 1,
           ),
         ),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(icon, size: 32, color: theme.colorScheme.secondary),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color:
+                    isSelected
+                        ? AppColors.primary.withAlpha(25)
+                        : AppColors.background,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                size: 24,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -65,26 +78,31 @@ class SelectionCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          isSelected
+                              ? AppColors.primary
+                              : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white70,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
             if (isSelected)
-              Icon(
+              const Icon(
                 Icons.check_circle,
-                color: theme.colorScheme.primary,
-                size: 28,
+                color: AppColors.primary,
+                size: 24,
               ),
           ],
         ),
@@ -106,43 +124,80 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(title: const Text("Select Network")),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: AppBar(title: const Text("Setup Guardian")),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              SelectionCard(
-                icon: Icons.public,
-                title: "Mutinynet",
-                description: "Test network for experimenting.",
-                isSelected: _selectedNetwork == NetworkType.mutinynet,
-                onTap: () {
-                  setState(() => _selectedNetwork = NetworkType.mutinynet);
-                },
+              const SizedBox(height: 16),
+              // Logo
+              const FedimintLogo(size: 64),
+              const SizedBox(height: 24),
+              // Title
+              const Text(
+                "Select Network",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
-              const SizedBox(height: 12),
-              SelectionCard(
-                icon: Icons.link,
-                title: "Regtest",
-                description: "Local network used for testing.",
-                isSelected: _selectedNetwork == NetworkType.regtest,
-                onTap: () {
-                  setState(() => _selectedNetwork = NetworkType.regtest);
-                },
+              const SizedBox(height: 8),
+              const Text(
+                "Choose which Bitcoin network to connect to",
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
-              SelectionCard(
-                icon: Icons.link,
-                title: "Mainnet",
-                description: "Setup a guardian on the Bitcoin network.",
-                isSelected: _selectedNetwork == NetworkType.mainnet,
-                onTap: () {
-                  setState(() => _selectedNetwork = NetworkType.mainnet);
-                },
+              const SizedBox(height: 32),
+              // Selection cards in a card container
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      SelectionCard(
+                        icon: Icons.science,
+                        title: "Mutinynet",
+                        description: "Test network for experimenting safely.",
+                        isSelected: _selectedNetwork == NetworkType.mutinynet,
+                        onTap: () {
+                          setState(
+                            () => _selectedNetwork = NetworkType.mutinynet,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SelectionCard(
+                        icon: Icons.developer_mode,
+                        title: "Regtest",
+                        description: "Local network for development testing.",
+                        isSelected: _selectedNetwork == NetworkType.regtest,
+                        onTap: () {
+                          setState(
+                            () => _selectedNetwork = NetworkType.regtest,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SelectionCard(
+                        icon: Icons.currency_bitcoin,
+                        title: "Mainnet",
+                        description: "Live Bitcoin network. Use with caution.",
+                        isSelected: _selectedNetwork == NetworkType.mainnet,
+                        onTap: () {
+                          setState(
+                            () => _selectedNetwork = NetworkType.mainnet,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
+              // Next button
               ElevatedButton(
                 onPressed:
                     _selectedNetwork == null
@@ -158,11 +213,9 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                             ),
                           );
                         },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                ),
                 child: const Text("Next"),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -174,6 +227,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
 // --------------------- Backend Selection ---------------------
 class BackendSelectionScreen extends StatefulWidget {
   final NetworkType network;
+
   const BackendSelectionScreen({super.key, required this.network});
 
   @override
@@ -185,33 +239,64 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(title: const Text("Select Backend")),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: AppBar(title: const Text("Setup Guardian")),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              SelectionCard(
-                icon: Icons.cloud,
-                title: "Esplora",
-                description: "Use Esplora API for blockchain data.",
-                isSelected: _selectedBackend == "Esplora",
-                onTap: () {
-                  setState(() => _selectedBackend = "Esplora");
-                },
+              const SizedBox(height: 16),
+              // Logo
+              const FedimintLogo(size: 64),
+              const SizedBox(height: 24),
+              // Title
+              const Text(
+                "Select Backend",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
-              const SizedBox(height: 12),
-              SelectionCard(
-                icon: Icons.storage,
-                title: "Bitcoind",
-                description: "Use your own full Bitcoin node backend.",
-                isSelected: _selectedBackend == "Bitcoind",
-                onTap: () {
-                  setState(() => _selectedBackend = "Bitcoind");
-                },
+              const SizedBox(height: 8),
+              const Text(
+                "Choose your blockchain data source",
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
+              // Selection cards in a card container
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      SelectionCard(
+                        icon: Icons.cloud,
+                        title: "Esplora",
+                        description: "Use an Esplora API for blockchain data.",
+                        isSelected: _selectedBackend == "Esplora",
+                        onTap: () {
+                          setState(() => _selectedBackend = "Esplora");
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SelectionCard(
+                        icon: Icons.dns,
+                        title: "Bitcoind",
+                        description: "Connect to your own Bitcoin full node.",
+                        isSelected: _selectedBackend == "Bitcoind",
+                        onTap: () {
+                          setState(() => _selectedBackend = "Bitcoind");
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              // Next button
               ElevatedButton(
                 onPressed:
                     _selectedBackend == null
@@ -237,11 +322,9 @@ class _BackendSelectionScreenState extends State<BackendSelectionScreen> {
                             );
                           }
                         },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                ),
                 child: const Text("Next"),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
