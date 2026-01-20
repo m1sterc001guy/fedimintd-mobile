@@ -4,6 +4,7 @@ import 'package:fedimintd_mobile/main.dart';
 import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// WebView screen that displays the Fedimintd dashboard.
@@ -30,6 +31,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   bool _isPageLoading = false;
   bool _refreshTriggered = false;
   bool _cancelled = false;
+  bool _isScanningQr = false;
 
   @override
   void initState() {
@@ -48,6 +50,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
     _controller =
         WebViewController()
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..addJavaScriptChannel(
+            'FedimintQrScanner',
+            onMessageReceived: (message) {
+              if (message.message == 'startQrScanner') {
+                if (mounted) {
+                  setState(() => _isScanningQr = true);
+                }
+              }
+            },
+          )
           ..setNavigationDelegate(
             NavigationDelegate(
               onPageStarted: (_) {
@@ -68,6 +80,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
                     _refreshTriggered = false;
                   }
                 }
+                _controller.runJavaScript('''
+                  window.fedimintQrScannerOverride = function(callback) {
+                    FedimintQrScanner.postMessage('startQrScanner');
+                    window.fedimintQrScannerResult = callback;
+                  };
+                ''');
               },
             ),
           );
@@ -180,6 +198,34 @@ class _WebViewScreenState extends State<WebViewScreen> {
               const LinearProgressIndicator(
                 minHeight: 2,
                 backgroundColor: Colors.transparent,
+              ),
+            if (_isScanningQr)
+              Container(
+                color: Colors.black87,
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      onDetect: (capture) {
+                        final barcode = capture.barcodes.first;
+                        if (barcode.rawValue != null) {
+                          setState(() => _isScanningQr = false);
+                          _controller.runJavaScript(
+                            'window.fedimintQrScannerResult && window.fedimintQrScannerResult("${barcode.rawValue}")',
+                          );
+                        }
+                      },
+                    ),
+                    Positioned(
+                      top: 60,
+                      right: 16,
+                      child: ElevatedButton.icon(
+                        onPressed: () => setState(() => _isScanningQr = false),
+                        icon: const Icon(Icons.close),
+                        label: const Text('Cancel'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),

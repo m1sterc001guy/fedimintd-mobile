@@ -69,7 +69,7 @@ pub async fn start_fedimintd_esplora(
     // Not sure if this is currently necessary
     std::env::set_var("FM_BIND_UI", "0.0.0.0:8175");
     fedimintd::run(
-        fedimintd::default_modules,
+        fedimintd::default_modules(),
         fedimint_build_code_version_env!(),
         None,
     )
@@ -101,7 +101,7 @@ pub async fn start_fedimintd_bitcoind(
     // Not sure if this is currently necessary
     std::env::set_var("FM_BIND_UI", "0.0.0.0:8175");
     fedimintd::run(
-        fedimintd::default_modules,
+        fedimintd::default_modules(),
         fedimint_build_code_version_env!(),
         None,
     )
