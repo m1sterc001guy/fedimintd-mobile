@@ -190,6 +190,17 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   Widget _buildWebViewScreen() {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() => _refreshTriggered = true);
+              _controller.reload();
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Stack(
           children: [
