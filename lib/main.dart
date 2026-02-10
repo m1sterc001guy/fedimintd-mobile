@@ -2,6 +2,7 @@ import 'package:fedimintd_mobile/frb_generated.dart';
 import 'package:fedimintd_mobile/startup_screen.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,7 @@ class Start extends StatelessWidget {
     return MaterialApp(
       title: 'Fedimint Setup',
       theme: _buildTheme(),
-      home: const SafeArea(child: StartupScreen()),
+      home: const WithForegroundTask(child: SafeArea(child: StartupScreen())),
     );
   }
 

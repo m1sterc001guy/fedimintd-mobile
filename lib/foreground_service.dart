@@ -11,7 +11,7 @@ class FedimintdTaskHandler extends TaskHandler {
     await AppLogger.init();
     await RustLib.init();
 
-    AppLogger.instance.info("FedimintdTaskHandler onStart");
+    AppLogger.instance.info("FedimintdTaskHandler onStart (starter: $starter)");
 
     final source = await FlutterForegroundTask.getData<String>(key: 'source');
     final networkName = await FlutterForegroundTask.getData<String>(
@@ -81,7 +81,11 @@ class FedimintdTaskHandler extends TaskHandler {
   void onRepeatEvent(DateTime timestamp) {}
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {}
+  Future<void> onDestroy(DateTime timestamp) async {
+    AppLogger.instance.warn(
+      'FedimintdTaskHandler onDestroy called at $timestamp - service is being destroyed',
+    );
+  }
 }
 
 /// Top-level callback function for foreground task.
@@ -112,15 +116,21 @@ Future<void> startForegroundService(BlockchainConfig config) async {
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
       eventAction: ForegroundTaskEventAction.nothing(),
+      autoRunOnBoot: true,
+      autoRunOnMyPackageReplaced: true,
+      allowWakeLock: true,
+      allowWifiLock: true,
     ),
   );
 
-  await FlutterForegroundTask.startService(
+  final result = await FlutterForegroundTask.startService(
     serviceId: 256,
     notificationTitle: 'Fedimintd Active',
     notificationText: 'Running federated ecash mint',
     callback: startFedimintdCallback,
   );
+
+  AppLogger.instance.info('Foreground service start result: $result');
 }
 
 /// Stop the foreground service.
