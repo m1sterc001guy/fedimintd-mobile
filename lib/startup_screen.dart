@@ -1,9 +1,11 @@
+import 'package:fedimintd_mobile/battery_disclaimer_screen.dart';
 import 'package:fedimintd_mobile/foreground_service.dart';
 import 'package:fedimintd_mobile/main.dart';
 import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:fedimintd_mobile/webview_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 /// Startup screen that handles config loading and service initialization.
 ///
@@ -27,6 +29,26 @@ class _StartupScreenState extends State<StartupScreen> {
 
   Future<void> _initialize() async {
     try {
+      // Check battery optimization exemption first
+      final isIgnoring =
+          await FlutterForegroundTask.isIgnoringBatteryOptimizations;
+      if (!isIgnoring) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (ctx) => BatteryDisclaimerScreen(
+                  onAcknowledged: () {
+                    Navigator.of(ctx).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const StartupScreen()),
+                    );
+                  },
+                ),
+          ),
+        );
+        return;
+      }
+
       final config = await readConfigFile();
 
       if (!mounted) return;

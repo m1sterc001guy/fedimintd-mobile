@@ -101,15 +101,6 @@ Future<void> startForegroundService(BlockchainConfig config) async {
 
   AppLogger.instance.info('Starting Fedimintd Foreground Service...');
 
-  // Request battery optimization exemption if not already granted
-  final isIgnoring = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
-  if (!isIgnoring) {
-    AppLogger.instance.info('Requesting battery optimization exemption...');
-    final granted =
-        await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-    AppLogger.instance.info('Battery optimization exemption granted: $granted');
-  }
-
   // Save config data to foreground task storage
   await config.saveToForegroundTask(dir.path);
 
