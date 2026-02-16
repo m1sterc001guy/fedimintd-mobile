@@ -1,4 +1,4 @@
-package org.fedimint.mobile
+package org.fedimint.mobile.master
 
 import android.content.Intent
 import android.os.Build

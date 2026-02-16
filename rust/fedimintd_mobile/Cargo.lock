@@ -2503,7 +2503,7 @@ checksum = "6205893dc6d15fb5fcadac245948f8d1c6d1ff78cae472d3d06466193f61252d"
 
 [[package]]
 name = "fedimintd_mobile"
-version = "0.1.0"
+version = "0.1.0-alpha"
 dependencies = [
  "bitcoin",
  "bitcoincore-rpc",

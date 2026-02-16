@@ -12,5 +12,11 @@ build-android-arm:
 build-linux:
   $ROOT/scripts/build-linux.sh
 
-run:
-  nix run --impure github:guibou/nixGL flutter run
+build-debug-apk:
+  $ROOT/docker/build-apk.sh debug
+
+run: build-linux
+  flutter run
+
+test:
+  flutter test
