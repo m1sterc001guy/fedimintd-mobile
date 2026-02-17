@@ -13,6 +13,7 @@ use std::{
 };
 
 use bitcoincore_rpc::RpcApi;
+use fedimint_aead::{encrypted_read, get_encryption_key};
 use fedimint_api_client::api::DynGlobalApi;
 use fedimint_connectors::ConnectorRegistry;
 use fedimint_core::{
@@ -202,4 +203,15 @@ pub async fn download_backup(db_path: String, password: String) -> anyhow::Resul
     let backup = admin_api.guardian_config_backup(ApiAuth(password)).await?;
 
     Ok(backup.tar_archive_bytes)
+}
+
+#[frb]
+pub async fn test_decryption(db_path: String, password: String) -> anyhow::Result<()> {
+    let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
+    let salt_file = fedimintd_dir.join("private.salt");
+    let salt = fs::read_to_string(salt_file)?;
+    let key = get_encryption_key(&password, &salt)?;
+    let in_file = fedimintd_dir.join("private.encrypt");
+    let _ = encrypted_read(&key, in_file)?;
+    Ok(())
 }

@@ -21,6 +21,8 @@ dependencies:
   share_plus: ^10.0.0
   web_socket_channel: ^3.0.0
   json_rpc_2: ^3.0.3
+  file_picker: ^8.0.0+1
+  archive: ^3.4.10
 
 dev_dependencies:
   flutter_test:

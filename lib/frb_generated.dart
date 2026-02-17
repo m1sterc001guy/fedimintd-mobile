@@ -62,7 +62,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.9.0';
 
   @override
-  int get rustContentHash => 578013850;
+  int get rustContentHash => -1598334722;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -97,6 +97,11 @@ abstract class RustLibApi extends BaseApi {
     required String password,
     required String url,
     required NetworkType network,
+  });
+
+  Future<void> crateTestDecryption({
+    required String dbPath,
+    required String password,
   });
 
   Future<void> crateTestEsplora({
@@ -263,6 +268,40 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<void> crateTestDecryption({
+    required String dbPath,
+    required String password,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_String(password, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateTestDecryptionConstMeta,
+        argValues: [dbPath, password],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateTestDecryptionConstMeta => const TaskConstMeta(
+    debugName: "test_decryption",
+    argNames: ["dbPath", "password"],
+  );
+
+  @override
   Future<void> crateTestEsplora({
     required String esploraUrl,
     required NetworkType network,
@@ -276,7 +315,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },

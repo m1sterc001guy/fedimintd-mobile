@@ -2508,6 +2508,7 @@ dependencies = [
  "bitcoin",
  "bitcoincore-rpc",
  "esplora-client",
+ "fedimint-aead",
  "fedimint-api-client",
  "fedimint-build",
  "fedimint-connectors",

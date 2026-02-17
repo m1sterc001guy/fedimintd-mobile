@@ -61,4 +61,12 @@ Future<Uint8List> downloadBackup({
   password: password,
 );
 
+Future<void> testDecryption({
+  required String dbPath,
+  required String password,
+}) => RustLib.instance.api.crateTestDecryption(
+  dbPath: dbPath,
+  password: password,
+);
+
 enum NetworkType { mutinynet, regtest, mainnet }

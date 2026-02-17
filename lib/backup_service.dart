@@ -1,6 +1,5 @@
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:fedimintd_mobile/lib.dart';
 import 'package:fedimintd_mobile/utils.dart';
