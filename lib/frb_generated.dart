@@ -74,7 +74,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
 abstract class RustLibApi extends BaseApi {
   Future<Uint8List> crateDownloadBackup({
-    required String dbPath,
+    required String invite,
     required String password,
   });
 
@@ -120,14 +120,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<Uint8List> crateDownloadBackup({
-    required String dbPath,
+    required String invite,
     required String password,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(dbPath, serializer);
+          sse_encode_String(invite, serializer);
           sse_encode_String(password, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
@@ -141,7 +141,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateDownloadBackupConstMeta,
-        argValues: [dbPath, password],
+        argValues: [invite, password],
         apiImpl: this,
       ),
     );
@@ -149,7 +149,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateDownloadBackupConstMeta => const TaskConstMeta(
     debugName: "download_backup",
-    argNames: ["dbPath", "password"],
+    argNames: ["invite", "password"],
   );
 
   @override

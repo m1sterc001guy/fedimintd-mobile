@@ -67,13 +67,13 @@ fn wire__crate__download_backup_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_db_path = <String>::sse_decode(&mut deserializer);
+            let api_invite = <String>::sse_decode(&mut deserializer);
             let api_password = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || async move {
-                        let output_ok = crate::download_backup(api_db_path, api_password).await?;
+                        let output_ok = crate::download_backup(api_invite, api_password).await?;
                         Ok(output_ok)
                     })()
                     .await,

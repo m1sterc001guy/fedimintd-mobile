@@ -54,10 +54,10 @@ Future<void> testBitcoind({
 );
 
 Future<Uint8List> downloadBackup({
-  required String dbPath,
+  required String invite,
   required String password,
 }) => RustLib.instance.api.crateDownloadBackup(
-  dbPath: dbPath,
+  invite: invite,
   password: password,
 );
 

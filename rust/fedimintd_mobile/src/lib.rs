@@ -182,10 +182,7 @@ pub async fn test_bitcoind(
 }
 
 #[frb]
-pub async fn download_backup(db_path: String, password: String) -> anyhow::Result<Vec<u8>> {
-    let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
-    let invite_code_file = fedimintd_dir.join("invite-code");
-    let invite = fs::read_to_string(invite_code_file)?;
+pub async fn download_backup(invite: String, password: String) -> anyhow::Result<Vec<u8>> {
     let invite_code = InviteCode::from_str(&invite)?;
     let our_id = invite_code.peer();
     let peers = invite_code.peers();

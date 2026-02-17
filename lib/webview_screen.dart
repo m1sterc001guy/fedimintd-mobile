@@ -180,7 +180,55 @@ class _WebViewScreenState extends State<WebViewScreen> {
     ''');
   }
 
-  void _showBackupPasswordDialog() {
+  Future<String?> _extractInviteCodeFromDom() async {
+    // Extract invite code from the copyInviteCodeBtn onclick attribute
+    // The onclick looks like: navigator.clipboard.writeText('fed1...').then(...)
+    const js = '''
+      (function() {
+        const btn = document.getElementById('copyInviteCodeBtn');
+        if (!btn) return null;
+        const onclick = btn.getAttribute('onclick');
+        if (!onclick) return null;
+        const match = onclick.match(/writeText\\('([^']+)'\\)/);
+        return match ? match[1] : null;
+      })();
+    ''';
+
+    final result = await _controller.runJavaScriptReturningResult(js);
+
+    // Result comes back as a quoted string like '"fed1..."' or 'null'
+    if (result == null || result == 'null') {
+      return null;
+    }
+
+    // Remove surrounding quotes if present
+    String inviteCode = result.toString();
+    if (inviteCode.startsWith('"') && inviteCode.endsWith('"')) {
+      inviteCode = inviteCode.substring(1, inviteCode.length - 1);
+    }
+
+    return inviteCode.isNotEmpty ? inviteCode : null;
+  }
+
+  Future<void> _showBackupPasswordDialog() async {
+    // First, extract the invite code from the DOM
+    final inviteCode = await _extractInviteCodeFromDom();
+
+    if (!mounted) return;
+
+    if (inviteCode == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Invite code not available - federation must complete its first consensus session',
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     final passwordController = TextEditingController();
 
     showDialog(
@@ -218,7 +266,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 final password = passwordController.text;
                 if (password.isNotEmpty) {
                   Navigator.of(dialogContext).pop();
-                  _createBackup(password);
+                  _createBackup(inviteCode, password);
                 }
               },
               child: const Text('Create Backup'),
@@ -229,13 +277,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
     );
   }
 
-  Future<void> _createBackup(String password) async {
+  Future<void> _createBackup(String inviteCode, String password) async {
     if (_isCreatingBackup) return;
 
     setState(() => _isCreatingBackup = true);
 
     try {
-      final result = await BackupService.downloadAndShareBackup(password);
+      final result = await BackupService.downloadAndShareBackup(
+        inviteCode,
+        password,
+      );
 
       if (mounted) {
         if (result.success) {

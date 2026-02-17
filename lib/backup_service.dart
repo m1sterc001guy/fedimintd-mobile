@@ -2,7 +2,6 @@ import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:fedimintd_mobile/lib.dart';
-import 'package:fedimintd_mobile/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -22,18 +21,25 @@ class BackupResult {
 /// Service for downloading and sharing guardian config backups.
 class BackupService {
   /// Downloads the guardian backup via Rust FFI and opens the share sheet.
+  ///
+  /// [inviteCode] - The federation invite code (parsed from dashboard DOM)
+  /// [password] - The guardian password for encryption
+  ///
   /// Returns a BackupResult with success status and optional error message.
-  static Future<BackupResult> downloadAndShareBackup(String password) async {
+  static Future<BackupResult> downloadAndShareBackup(
+    String inviteCode,
+    String password,
+  ) async {
     try {
       developer.log(
         'Starting backup download via Rust FFI...',
         name: 'BackupService',
       );
 
-      // Get the database path
-      final dir = await getConfigDirectory();
-      final dbPath = dir.path;
-      developer.log('Database path: $dbPath', name: 'BackupService');
+      developer.log(
+        'Using invite code: ${inviteCode.substring(0, 20)}...',
+        name: 'BackupService',
+      );
 
       // Call the Rust function via Flutter Rust Bridge
       developer.log(
@@ -41,7 +47,7 @@ class BackupService {
         name: 'BackupService',
       );
       final backupBytes = await downloadBackup(
-        dbPath: dbPath,
+        invite: inviteCode,
         password: password,
       );
 
