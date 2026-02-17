@@ -69,6 +69,10 @@ pub async fn start_fedimintd_esplora(
 ) -> anyhow::Result<()> {
     let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
 
+    if network_type == NetworkType::Mainnet {
+        std::env::set_var("RUST_LOG", "warn");
+    }
+
     // Create the directory if it doesn't exist
     std::fs::create_dir_all(&fedimintd_dir)?;
 
@@ -100,6 +104,10 @@ pub async fn start_fedimintd_bitcoind(
     url: String,
 ) -> anyhow::Result<()> {
     let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
+
+    if network_type == NetworkType::Mainnet {
+        std::env::set_var("RUST_LOG", "warn");
+    }
 
     // Create the directory if it doesn't exist
     std::fs::create_dir_all(&fedimintd_dir)?;
