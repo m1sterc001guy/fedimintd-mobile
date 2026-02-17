@@ -4,11 +4,6 @@
 
 # Fedimint Mobile – Run a Fedimint Guardian on Your Phone
 
-<p align="center">
-  <img src="metadata/en-us/images/phoneScreenshots/1.png" alt="Setup" width="250"/>
-  <img src="metadata/en-us/images/phoneScreenshots/2.png" alt="Dashboard" width="250"/>
-</p>
-
 **Fedimint Mobile** is a Flutter-based app that allows you to run a [Fedimint](https://fedimint.org/) **Guardian node** directly on an **Android** phone.
 
 ---
@@ -23,6 +18,7 @@
 
 - 📱 **Run a Guardian on Your Phone** – Deploy a Fedimint Guardian directly on an Android phone
 - 🔒 **Easy Backup and Restore** – Backup your guardian and restore on a new phone or server whenever you need to
+- 📷 **Easy Setup with QR Codes** – Scan QR setup codes with your camera for quick setup during distributed key generation
 - 🌐 **Built-in Federation UI** – Manage your federation through the app's interface
 
 ---
