@@ -1,51 +1,50 @@
-# Fedimint Mobile
-
-Fedimintd Mobile is a Flutter-based app that allows you to run a [Fedimint](https://fedimint.org/) **Guardian node** directly on **Android** or **Linux** devices. It leverages [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge), [iroh](https://github.com/n0-computer/iroh), and [esplora](https://github.com/Blockstream/esplora) to integrate a Rust-based `fedimintd` backend with a mobile-friendly UI.
-
-<p algin="center">
-  <img src="docs/setup.jpeg">
-  <img src="docs/dashboard.jpeg">
+<p align="center">
+  <img src="metadata/en-us/images/fedimint-icon.png" alt="Fedimint Logo" width="200"/>
 </p>
 
-## ⚠️ Warning: Not currently recommended for production use
+# Fedimint Mobile – Run a Fedimint Guardian on Your Phone
 
-While this application is just a wrapper around `fedimintd`, an Android device is typically not the ideal deployment for an always-on server application. Use at your own risk.
+**Fedimint Mobile** is a Flutter-based app that allows you to run a [Fedimint](https://fedimint.org/) **Guardian node** directly on an **Android** phone.
 
-`fedimintd` is a server application. It is expected that this app will be open at all times and may have impact on the battery life of a phone.
+---
+
+## ⚠️ Warning
+
+`fedimintd` is a server application and runs in an Android Foreground Task. It is data and battery intensive and is assumed to have constant Wifi access and plugged into a charger. It is recommended to use a old phone that is not your "daily driver".
+
+---
+
+## ✨ Features
+
+- 📱 **Run a Guardian on Your Phone** – Deploy a Fedimint Guardian directly on an Android phone
+- 🔒 **Easy Backup and Restore** – Backup your guardian and restore on a new phone or server whenever you need to
+- 📷 **Easy Setup with QR Codes** – Scan QR setup codes with your camera for quick setup during distributed key generation
+- 🌐 **Built-in Federation UI** – Manage your federation through the app's interface
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="metadata/en-us/images/phoneScreenshots/3.png" alt="Settings" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/4.png" alt="Backups" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/5.png" alt="Add Federation" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/6.png" alt="Invite Code" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/7.png" alt="Status" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/8.png" alt="Users" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/9.png" alt="Config" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/10.png" alt="Dashboard" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/11.png" alt="Dashboard Running" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/12.png" alt="Logs" width="250"/>
+  <img src="metadata/en-us/images/phoneScreenshots/13.png" alt="Session Info" width="250"/>
+</p>
+
+---
 
 ## Supported Platforms
- - [Android](https://github.com/m1sterc001guy/fedimintd-mobile/releases)
- - [Linux](#development)
 
-PRs to add iOS support are welcome.
+- [Android](https://github.com/m1sterc001guy/fedimintd-mobile/releases)
 
-## Why Use Fedimintd Mobile?
+---
 
-- **Easy setup experience**: No server is required, only an Android phone or Linux machine
-- **Run a portable Fedimint Guardian**: Your guardian can be on the go
-- **Explore Federated Ecash**: Easily deploy an ecash mint in a federated or centralized configuration
-
-## Development
-Fedimint Mobile uses nix and nix flakes to manage dependencies and build the project.
-
-First, install nix
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-```
-
-Then enter the nix developer environment. First invocation will take some time.
-
-```bash
-nix develop
-```
-
-To build the rust code, run
-```bash
-just build-linux
-```
-
-To run the app on Linux, simply run
-```bash
-just run
-```
+See [contributing](./docs/contributing.md) for getting setup with a development environment.
