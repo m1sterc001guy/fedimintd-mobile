@@ -53,4 +53,20 @@ Future<void> testBitcoind({
   network: network,
 );
 
+Future<Uint8List> downloadBackup({
+  required String invite,
+  required String password,
+}) => RustLib.instance.api.crateDownloadBackup(
+  invite: invite,
+  password: password,
+);
+
+Future<void> testDecryption({
+  required String dbPath,
+  required String password,
+}) => RustLib.instance.api.crateTestDecryption(
+  dbPath: dbPath,
+  password: password,
+);
+
 enum NetworkType { mutinynet, regtest, mainnet }

@@ -2,6 +2,7 @@ import 'package:fedimintd_mobile/battery_disclaimer_screen.dart';
 import 'package:fedimintd_mobile/foreground_service.dart';
 import 'package:fedimintd_mobile/main.dart';
 import 'package:fedimintd_mobile/onboarding.dart';
+import 'package:fedimintd_mobile/setup_choice_screen.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:fedimintd_mobile/webview_screen.dart';
 import 'package:flutter/material.dart';
@@ -54,9 +55,9 @@ class _StartupScreenState extends State<StartupScreen> {
       if (!mounted) return;
 
       if (config == null) {
-        // No config found, go to onboarding
+        // No config found, go to setup choice screen (create new or recover)
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const NetworkSelectionScreen()),
+          MaterialPageRoute(builder: (_) => const SetupChoiceScreen()),
         );
         return;
       }

@@ -18,6 +18,11 @@ dependencies:
   flutter_foreground_task: ^8.13.0
   permission_handler: ^11.3.1
   mobile_scanner: ^3.5.0
+  share_plus: ^10.0.0
+  web_socket_channel: ^3.0.0
+  json_rpc_2: ^3.0.3
+  file_picker: ^8.0.0+1
+  archive: ^3.4.10
 
 dev_dependencies:
   flutter_test:
