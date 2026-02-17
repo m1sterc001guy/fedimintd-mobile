@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:fedimintd_mobile/backup_service.dart';
 import 'package:fedimintd_mobile/main.dart';
 import 'package:fedimintd_mobile/onboarding.dart';
+import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -20,7 +23,8 @@ class WebViewScreen extends StatefulWidget {
   State<WebViewScreen> createState() => _WebViewScreenState();
 }
 
-class _WebViewScreenState extends State<WebViewScreen> {
+class _WebViewScreenState extends State<WebViewScreen>
+    with WidgetsBindingObserver {
   static const _serverUrl = 'http://localhost:8175';
   static const _maxAttempts = 60; // 60 seconds timeout
   static const _pollInterval = Duration(seconds: 1);
@@ -34,18 +38,36 @@ class _WebViewScreenState extends State<WebViewScreen> {
   bool _cancelled = false;
   bool _isScanningQr = false;
   bool _isCreatingBackup = false;
+  bool _backupReminderShown = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _setupWebViewController();
     _pollForServer();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cancelled = true;
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // Reset the flag so we can show the reminder again
+      _backupReminderShown = false;
+      // Check after a short delay to let the UI settle
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted && !_backupReminderShown && _isServerReady) {
+          _checkAndShowBackupReminder();
+        }
+      });
+    }
   }
 
   void _setupWebViewController() {
@@ -91,6 +113,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   }
                 }
                 _injectJavaScriptOverrides();
+
+                // Check for backup reminder after a delay
+                Future.delayed(const Duration(seconds: 6), () {
+                  if (mounted && !_backupReminderShown) {
+                    _checkAndShowBackupReminder();
+                  }
+                });
               },
             ),
           );
@@ -178,6 +207,174 @@ class _WebViewScreenState extends State<WebViewScreen> {
         console.log('MutationObserver initialized for backup button');
       })();
     ''');
+  }
+
+  // ---- Backup Reminder Methods ----
+
+  /// Returns the path to the backup acknowledgment file.
+  Future<File> _getBackupAcknowledgedFile() async {
+    final dir = await getConfigDirectory();
+    return File('${dir.path}/fedimintd_mobile/backup_acknowledged.json');
+  }
+
+  /// Checks if the user has completed a backup (not just dismissed).
+  /// Returns true only if the file exists and reason is "backed_up".
+  Future<bool> _hasCompletedBackup() async {
+    try {
+      final file = await _getBackupAcknowledgedFile();
+      if (!await file.exists()) {
+        return false;
+      }
+      final contents = await file.readAsString();
+      final json = jsonDecode(contents) as Map<String, dynamic>;
+      return json['reason'] == 'backed_up';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Writes the backup acknowledgment file with the given reason.
+  /// [reason] should be either "backed_up" or "dismissed".
+  Future<void> _writeBackupAcknowledged(String reason) async {
+    try {
+      final file = await _getBackupAcknowledgedFile();
+      final json = {
+        'reason': reason,
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
+      };
+      await file.writeAsString(jsonEncode(json), flush: true);
+    } catch (e) {
+      // Log error but don't fail - this is not critical
+      AppLogger.instance.error('Failed to write backup acknowledgment: $e');
+    }
+  }
+
+  /// Checks if backup reminder should be shown and shows it if needed.
+  /// Called ~6 seconds after page load.
+  Future<void> _checkAndShowBackupReminder() async {
+    if (_backupReminderShown || !mounted) return;
+
+    // Check if user has already completed a backup
+    final hasBackup = await _hasCompletedBackup();
+    if (hasBackup) return;
+
+    // Check if invite code is available (federation ready)
+    final inviteCode = await _extractInviteCodeFromDom();
+    if (inviteCode == null) return;
+
+    if (!mounted) return;
+
+    _backupReminderShown = true;
+    _showBackupReminderModal(inviteCode);
+  }
+
+  /// Shows the backup reminder bottom sheet modal.
+  void _showBackupReminderModal(String inviteCode) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Icon
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(25),
+                  borderRadius: BorderRadius.circular(36),
+                ),
+                child: const Icon(
+                  Icons.backup,
+                  size: 36,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Title
+              const Text(
+                'Backup Your Guardian',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              // Body text
+              const Text(
+                'Your guardian is running but you haven\'t created a backup yet.\n\n'
+                'Creating a backup is strongly encouraged. It ensures you can '
+                'recover your guardian if your device is lost, damaged, or reset.',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              // Backup Now button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _showBackupPasswordDialog();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Backup Now',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // I know what I'm doing button
+              TextButton(
+                onPressed: () {
+                  _writeBackupAcknowledged('dismissed');
+                  Navigator.of(bottomSheetContext).pop();
+                },
+                child: const Text(
+                  'I know what I\'m doing',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<String?> _extractInviteCodeFromDom() async {
@@ -290,6 +487,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
       if (mounted) {
         if (result.success) {
+          // Mark backup as completed
+          await _writeBackupAcknowledged('backed_up');
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Backup created successfully!'),
