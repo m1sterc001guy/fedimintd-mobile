@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fedimintd_mobile/backup_service.dart';
 import 'package:fedimintd_mobile/main.dart';
 import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   bool _refreshTriggered = false;
   bool _cancelled = false;
   bool _isScanningQr = false;
+  bool _isCreatingBackup = false;
 
   @override
   void initState() {
@@ -60,6 +62,14 @@ class _WebViewScreenState extends State<WebViewScreen> {
               }
             },
           )
+          ..addJavaScriptChannel(
+            'FedimintBackup',
+            onMessageReceived: (message) {
+              if (message.message == 'requestBackup') {
+                _showBackupPasswordDialog();
+              }
+            },
+          )
           ..setNavigationDelegate(
             NavigationDelegate(
               onPageStarted: (_) {
@@ -80,15 +90,189 @@ class _WebViewScreenState extends State<WebViewScreen> {
                     _refreshTriggered = false;
                   }
                 }
-                _controller.runJavaScript('''
-                  window.fedimintQrScannerOverride = function(callback) {
-                    FedimintQrScanner.postMessage('startQrScanner');
-                    window.fedimintQrScannerResult = callback;
-                  };
-                ''');
+                _injectJavaScriptOverrides();
               },
             ),
           );
+  }
+
+  void _injectJavaScriptOverrides() {
+    _controller.runJavaScript('''
+      // Override QR scanner
+      window.fedimintQrScannerOverride = function(callback) {
+        FedimintQrScanner.postMessage('startQrScanner');
+        window.fedimintQrScannerResult = callback;
+      };
+      
+      // Override backup button click using MutationObserver
+      (function() {
+        // Track which elements we've already processed to avoid duplicate listeners
+        const processedElements = new WeakSet();
+        
+        function isBackupButton(el) {
+          // Check by data-testid attributes
+          const testId = el.getAttribute('data-testid');
+          if (testId && (testId.includes('backup') || testId.includes('download'))) {
+            return true;
+          }
+          
+          // Check by text content
+          const text = (el.textContent || el.innerText || '').toLowerCase();
+          if (text.includes('backup') || text.includes('download')) {
+            return true;
+          }
+          
+          return false;
+        }
+        
+        function attachBackupListener(el) {
+          if (processedElements.has(el)) {
+            return;
+          }
+          processedElements.add(el);
+          
+          el.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            FedimintBackup.postMessage('requestBackup');
+          });
+          console.log('Backup button override attached');
+        }
+        
+        function processElement(el) {
+          if (el.matches && (el.matches('button, a, [role="button"]')) && isBackupButton(el)) {
+            attachBackupListener(el);
+          }
+          
+          // Also check children
+          if (el.querySelectorAll) {
+            const elements = el.querySelectorAll('button, a, [role="button"]');
+            for (const child of elements) {
+              if (isBackupButton(child)) {
+                attachBackupListener(child);
+              }
+            }
+          }
+        }
+        
+        // Process existing elements immediately
+        processElement(document.body);
+        
+        // Set up MutationObserver to watch for new elements
+        const observer = new MutationObserver(function(mutations) {
+          for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                processElement(node);
+              }
+            }
+          }
+        });
+        
+        // Start observing the entire document
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+        console.log('MutationObserver initialized for backup button');
+      })();
+    ''');
+  }
+
+  void _showBackupPasswordDialog() {
+    final passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Create Backup'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter your guardian password to create an encrypted backup. '
+                'This backup can be used to restore your guardian node.',
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  hintText: 'Enter your guardian password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final password = passwordController.text;
+                if (password.isNotEmpty) {
+                  Navigator.of(dialogContext).pop();
+                  _createBackup(password);
+                }
+              },
+              child: const Text('Create Backup'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _createBackup(String password) async {
+    if (_isCreatingBackup) return;
+
+    setState(() => _isCreatingBackup = true);
+
+    try {
+      final result = await BackupService.downloadAndShareBackup(password);
+
+      if (mounted) {
+        if (result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Backup created successfully!'),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Failed to create backup: ${result.errorMessage ?? "Unknown error"}',
+              ),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating backup: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCreatingBackup = false);
+      }
+    }
   }
 
   Future<void> _pollForServer() async {
@@ -236,6 +420,23 @@ class _WebViewScreenState extends State<WebViewScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            if (_isCreatingBackup)
+              Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        'Creating backup...',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],

@@ -2,12 +2,24 @@
 
 mod frb_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 
-use std::{fmt, fs::OpenOptions, io, os::fd::AsRawFd, path::Path, time::Duration};
+use std::{
+    fmt,
+    fs::{self, OpenOptions},
+    io,
+    os::fd::AsRawFd,
+    path::Path,
+    str::FromStr,
+    time::Duration,
+};
 
 use bitcoincore_rpc::RpcApi;
+use fedimint_api_client::api::DynGlobalApi;
+use fedimint_connectors::ConnectorRegistry;
 use fedimint_core::{
     anyhow::{self, ensure},
     fedimint_build_code_version_env,
+    invite_code::InviteCode,
+    module::ApiAuth,
 };
 use flutter_rust_bridge::frb;
 
@@ -68,6 +80,8 @@ pub async fn start_fedimintd_esplora(
     std::env::set_var("FM_ESPLORA_URL", esplora_url);
     // Not sure if this is currently necessary
     std::env::set_var("FM_BIND_UI", "0.0.0.0:8175");
+    // Disable checkpoints because Android cannot handle hard links
+    std::env::set_var("FM_DB_CHECKPOINT_RETENTION", "0");
     fedimintd::run(
         fedimintd::default_modules(),
         fedimint_build_code_version_env!(),
@@ -98,6 +112,8 @@ pub async fn start_fedimintd_bitcoind(
     std::env::set_var("FM_BITCOIND_USERNAME", username);
     std::env::set_var("FM_BITCOIND_PASSWORD", password);
     std::env::set_var("FM_BITCOIND_URL", url);
+    // Disable checkpoints because Android cannot handle hard links
+    std::env::set_var("FM_DB_CHECKPOINT_RETENTION", "0");
     // Not sure if this is currently necessary
     std::env::set_var("FM_BIND_UI", "0.0.0.0:8175");
     fedimintd::run(
@@ -162,4 +178,28 @@ pub async fn test_bitcoind(
     };
     ensure!(network == bitcoind_network);
     Ok(())
+}
+
+#[frb]
+pub async fn download_backup(db_path: String, password: String) -> anyhow::Result<Vec<u8>> {
+    let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
+    let invite_code_file = fedimintd_dir.join("invite-code");
+    let invite = fs::read_to_string(invite_code_file)?;
+    let invite_code = InviteCode::from_str(&invite)?;
+    let our_id = invite_code.peer();
+    let peers = invite_code.peers();
+    let endpoints = ConnectorRegistry::build_from_client_defaults()
+        .bind()
+        .await?;
+
+    let admin_api = DynGlobalApi::new_admin(
+        endpoints,
+        our_id,
+        peers.get(&our_id).cloned().expect("Did not have URL"),
+        invite_code.api_secret().as_deref(),
+    )?;
+
+    let backup = admin_api.guardian_config_backup(ApiAuth(password)).await?;
+
+    Ok(backup.tar_archive_bytes)
 }
