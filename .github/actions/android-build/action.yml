@@ -1,0 +1,199 @@
+name: "Android Build (Rust + Flutter)"
+description: "Sets up Rust, Flutter, NDK, builds Rust lib and Flutter APK"
+inputs:
+  mode:
+    description: "Build mode: debug or release"
+    required: true
+  use-production-package-id:
+    description: "Use production package ID (org.fedimint.mobile) instead of development (org.fedimint.mobile.master)"
+    required: false
+    default: "false"
+  with-signing:
+    description: "Whether to set up Android signing"
+    required: false
+    default: "false"
+  android-keystore:
+    description: "Base64 encoded Android keystore"
+    required: false
+  keystore-password:
+    description: "Keystore password"
+    required: false
+  key-password:
+    description: "Key password"
+    required: false
+  key-alias:
+    description: "Key alias"
+    required: false
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get short SHA
+      id: slug
+      shell: bash
+      run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+
+    # Clean runner disk to free space
+    - name: Free disk space & clean builds
+      shell: bash
+      run: |
+        echo "Cleaning up old caches and build artifacts..."
+        flutter clean || true
+        rm -rf android/.gradle android/build build
+        rm -rf ~/.pub-cache/*
+        rm -rf /usr/local/lib/android/sdk/system-images
+        rm -rf /usr/local/lib/android/sdk/platforms
+        rm -rf /usr/local/lib/android/sdk/build-tools
+        df -h
+
+    # Cache Rust dependencies
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-registry-
+
+    - name: Cache cargo git index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-git-
+
+    - name: Cache cargo target
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-target-${{ inputs.mode }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-target-${{ inputs.mode }}-
+
+    # Cache Flutter pub packages
+    - name: Cache Flutter pub
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          **/.dart_tool
+        key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+
+    - name: Read Flutter version
+      id: flutter-version
+      shell: bash
+      run: echo "version=$(cat .flutter-version)" >> $GITHUB_OUTPUT
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ steps.flutter-version.outputs.version }}
+        channel: 'stable'
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: aarch64-linux-android
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zlib1g-dev clang libclang-dev libc6-dev-i386
+
+    - name: Install cargo-ndk
+      shell: bash
+      run: cargo install cargo-ndk || echo "cargo-ndk already installed"
+
+    - name: Install Flutter dependencies
+      shell: bash
+      run: flutter pub get
+
+    - name: Update package ID for production release
+      if: inputs.use-production-package-id == 'true'
+      shell: bash
+      run: |
+        # Update namespace and applicationId in build.gradle.kts
+        sed -i 's/namespace = ".*"/namespace = "org.fedimint.mobile"/' android/app/build.gradle.kts
+        sed -i 's/applicationId = ".*"/applicationId = "org.fedimint.mobile"/' android/app/build.gradle.kts
+
+        # Update package in MainActivity.kt
+        CURRENT_PACKAGE=$(grep '^package ' android/app/src/main/kotlin/io/fedimintd/MainActivity.kt | sed 's/package //')
+        sed -i "s/package ${CURRENT_PACKAGE}/package org.fedimint.mobile/" android/app/src/main/kotlin/io/fedimintd/MainActivity.kt
+
+        # Update APPLICATION_ID in Linux CMakeLists.txt
+        sed -i 's/set(APPLICATION_ID ".*")/set(APPLICATION_ID "org.fedimint.mobile")/' linux/CMakeLists.txt
+
+    - name: Build Rust library for Android
+      shell: bash
+      run: |
+        ROOT="$(pwd)"
+        RUST_DIR="$ROOT/rust/fedimintd_mobile"
+        JNI_LIBS_DIR="$ROOT/android/app/src/main/jniLibs/arm64-v8a"
+        mkdir -p "$JNI_LIBS_DIR"
+
+        # cargo-ndk handles CC/CXX/AR/LINKER setup automatically.
+        # Only set bindgen args for header resolution.
+        export BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android="--sysroot=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot -I$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -I$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android"
+
+        cd "$RUST_DIR"
+        # Platform 28 required: aws-lc-sys uses getentropy() which needs Android API 28+
+        cargo ndk -t arm64-v8a --platform 28 -o "$JNI_LIBS_DIR" build --release --target aarch64-linux-android
+        find "$JNI_LIBS_DIR" -mindepth 2 -type f -name '*.so' -exec mv {} "$JNI_LIBS_DIR" \;
+        find "$JNI_LIBS_DIR" -mindepth 1 -type d -empty -delete
+        cp "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" "$JNI_LIBS_DIR/" 2>/dev/null || true
+
+    - name: Setup Release Keystore
+      if: inputs.with-signing == 'true'
+      shell: bash
+      run: |
+        mkdir -p android
+        echo "${{ inputs.android-keystore }}" | base64 -d > android/app/release-keystore.p12
+        cat > android/key.properties << EOF
+        storePassword=${{ inputs.keystore-password }}
+        keyPassword=${{ inputs.key-password }}
+        keyAlias=${{ inputs.key-alias }}
+        storeFile=release-keystore.p12
+        EOF
+
+    - name: Update versionCode and versionName
+      if: inputs.with-signing == 'true'
+      id: version
+      shell: bash
+      run: |
+        FULL_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+        VERSION_NAME=$(echo "$FULL_VERSION" | cut -d'+' -f1)
+
+        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          # For tagged releases, the release script already set version+code in pubspec.yaml
+          VERSION_CODE=$(echo "$FULL_VERSION" | cut -d'+' -f2)
+          if [[ "$VERSION_CODE" == "$VERSION_NAME" ]]; then
+            echo "Error: pubspec.yaml version is missing +versionCode. Use scripts/release.sh to create releases."
+            exit 1
+          fi
+        else
+          # For master builds, use run number
+          VERSION_CODE=$GITHUB_RUN_NUMBER
+          sed -i "s/version: .*/version: $VERSION_NAME+$VERSION_CODE/" pubspec.yaml
+        fi
+
+        echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+        echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+        echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+        echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+    - name: Build Flutter APK
+      shell: bash
+      run: flutter build apk --${{ inputs.mode }}
+
+    - name: Rename APK
+      if: inputs.with-signing == 'true'
+      shell: bash
+      run: |
+        mv build/app/outputs/flutter-apk/app-release.apk \
+        build/app/outputs/flutter-apk/fedimintd-mobile-${{ steps.version.outputs.version_name }}+${{ steps.version.outputs.version_code }}-${{ steps.slug.outputs.sha8 }}.apk

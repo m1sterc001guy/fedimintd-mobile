@@ -49,3 +49,7 @@ app.*.map.json
 **/*.so
 **/*.db/
 **/client.db.lock
+
+# Docker build caches
+.docker-cache/
+.dart_tool.host/
