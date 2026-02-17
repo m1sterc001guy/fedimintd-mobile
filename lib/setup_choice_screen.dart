@@ -232,7 +232,7 @@ class _SetupChoiceScreenState extends State<SetupChoiceScreen> {
                         icon: Icons.add_circle,
                         title: 'Create New Guardian',
                         description:
-                            'Set up a new guardian from scratch. You will need an invite code from the federation.',
+                            'Set up a new guardian ready to do distributed key generation.',
                         onTap: _isRecovering ? null : _onCreateNew,
                       ),
                       const SizedBox(height: 16),
@@ -242,7 +242,7 @@ class _SetupChoiceScreenState extends State<SetupChoiceScreen> {
                         icon: Icons.restore,
                         title: 'Recover Existing Guardian',
                         description:
-                            'Restore a guardian from a backup file. You will need your backup tar file.',
+                            'Restore a guardian from a backup tar file and password.',
                         onTap: _isRecovering ? null : _onRecover,
                       ),
                     ],
