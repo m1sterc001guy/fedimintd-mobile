@@ -44,6 +44,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Notification icon for foreground service -->
+        <meta-data
+            android:name="org.fedimint.mobile.NOTIFICATION_ICON"
+            android:resource="@drawable/ic_notification" />
         <!-- Foreground service for Fedimintd -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
