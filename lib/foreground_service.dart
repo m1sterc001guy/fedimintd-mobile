@@ -127,6 +127,9 @@ Future<void> startForegroundService(BlockchainConfig config) async {
     serviceId: 256,
     notificationTitle: 'Fedimintd Active',
     notificationText: 'Running federated ecash mint',
+    notificationIcon: const NotificationIcon(
+      metaDataName: 'org.fedimint.mobile.NOTIFICATION_ICON',
+    ),
     callback: startFedimintdCallback,
   );
 
