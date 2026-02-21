@@ -2,7 +2,8 @@
 set -e
 
 # Release script for Fedimintd Mobile
-# Calculates versionCode, updates pubspec.yaml and Cargo.toml, commits, and tags.
+# Calculates versionCode, updates pubspec.yaml, Cargo.toml, and build.gradle.kts, commits, and tags.
+# All releases update the Android package ID to production. Final releases (non-RC) also prompt for changelog.
 #
 # Usage:
 #   ./scripts/release.sh <version>
@@ -83,6 +84,11 @@ echo "Updated pubspec.yaml → version: $VERSION+$VERSION_CODE"
 sed -i "s/^version = \".*\"/version = \"$VERSION\"/" "$PROJECT_ROOT/rust/fedimintd_mobile/Cargo.toml"
 echo "Updated Cargo.toml → version: $VERSION"
 
+# Update Android package ID to production (org.fedimint.mobile)
+GRADLE_FILE="$PROJECT_ROOT/android/app/build.gradle.kts"
+sed -i 's/org\.fedimint\.mobile\.master/org.fedimint.mobile/g' "$GRADLE_FILE"
+echo "Updated build.gradle.kts → applicationId: org.fedimint.mobile"
+
 # Create changelog for non-RC releases
 CHANGELOG_FILE=""
 if [[ "$IS_RC" == "false" ]]; then
@@ -124,7 +130,7 @@ EOF
 fi
 
 # Commit and tag
-git -C "$PROJECT_ROOT" add pubspec.yaml rust/fedimintd_mobile/Cargo.toml
+git -C "$PROJECT_ROOT" add pubspec.yaml rust/fedimintd_mobile/Cargo.toml android/app/build.gradle.kts
 if [[ -n "$CHANGELOG_FILE" && -f "$CHANGELOG_FILE" ]]; then
     git -C "$PROJECT_ROOT" add "$CHANGELOG_FILE"
 fi
