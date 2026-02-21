@@ -1,0 +1,24 @@
+identifier: org.fedimint.mobile
+name: Fedimint
+summary: A federated ecash mint on your phone with QR-based setup, guardian management, and easy backups.
+repository: https://github.com/m1sterc001guy/fedimintd-mobile
+homepage: https://fedimint.org
+images:
+ - ./assets/screenshots/backend.png
+ - ./assets/screenshots/backup.png
+ - ./assets/screenshots/bitcoind.png
+ - ./assets/screenshots/disclaimer.png
+ - ./assets/screenshots/dkg.png
+ - ./assets/screenshots/esplora.png
+ - ./assets/screenshots/login.png
+ - ./assets/screenshots/network.png
+ - ./assets/screenshots/setup.png
+ - ./assets/screenshots/starting.png
+ - ./assets/screenshots/welcome.png
+icon: assets/images/fedimint-icon.png
+tags: fedimint e-cash ecash lightning onchain bitcoin
+license: MIT
+remote_metadata:
+ - github
+assets:
+ - fedimintd-mobile-\d+\.\d+\.\d+\+\d+-[0-9a-f]+\.apk

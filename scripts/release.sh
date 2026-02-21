@@ -53,6 +53,10 @@ else
 fi
 
 TAG="v$VERSION"
+IS_RC=false
+if [[ "$VERSION" == *"-rc."* ]]; then
+    IS_RC=true
+fi
 
 echo "Release: $VERSION"
 echo "Version code: $VERSION_CODE"
@@ -79,8 +83,51 @@ echo "Updated pubspec.yaml → version: $VERSION+$VERSION_CODE"
 sed -i "s/^version = \".*\"/version = \"$VERSION\"/" "$PROJECT_ROOT/rust/fedimintd_mobile/Cargo.toml"
 echo "Updated Cargo.toml → version: $VERSION"
 
+# Create changelog for non-RC releases
+CHANGELOG_FILE=""
+if [[ "$IS_RC" == "false" ]]; then
+    CHANGELOG_DIR="$PROJECT_ROOT/metadata/en-US/changelogs"
+    CHANGELOG_FILE="$CHANGELOG_DIR/$VERSION_CODE.txt"
+    
+    mkdir -p "$CHANGELOG_DIR"
+    
+    # Create temp file with instructions
+    TEMP_FILE=$(mktemp)
+    cat > "$TEMP_FILE" << EOF
+
+# Enter release notes for v$VERSION (versionCode: $VERSION_CODE)
+# Lines starting with # will be removed.
+# Max 500 characters. Save and quit to continue, or leave empty to skip.
+# 
+# Example:
+#   * New feature X
+#   * Fixed bug Y
+#   * Improved performance of Z
+
+EOF
+    
+    # Open vim for user to enter release notes
+    echo "Opening editor for release notes..."
+    ${EDITOR:-vim} "$TEMP_FILE"
+    
+    # Remove comment lines and leading/trailing whitespace
+    CHANGELOG_CONTENT=$(grep -v '^#' "$TEMP_FILE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | sed '/^$/d')
+    rm "$TEMP_FILE"
+    
+    if [[ -n "$CHANGELOG_CONTENT" ]]; then
+        echo "$CHANGELOG_CONTENT" > "$CHANGELOG_FILE"
+        echo "Created changelog → $CHANGELOG_FILE"
+    else
+        echo "No changelog content provided, skipping changelog creation."
+        CHANGELOG_FILE=""
+    fi
+fi
+
 # Commit and tag
 git -C "$PROJECT_ROOT" add pubspec.yaml rust/fedimintd_mobile/Cargo.toml
+if [[ -n "$CHANGELOG_FILE" && -f "$CHANGELOG_FILE" ]]; then
+    git -C "$PROJECT_ROOT" add "$CHANGELOG_FILE"
+fi
 git -C "$PROJECT_ROOT" commit -m "chore: bump version to $TAG"
 git -C "$PROJECT_ROOT" tag "$TAG"
 
