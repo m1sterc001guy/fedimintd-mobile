@@ -1,0 +1,9 @@
+Fedimint Mobile allows you to run a Fedimint Guardian node directly on an Android phone.
+
+Features:
+* Run a Guardian on Your Phone - Deploy a Fedimint Guardian directly on Android
+* Easy Backup and Restore - Backup your guardian and restore on a new phone or server
+* Easy Setup with QR Codes - Scan QR setup codes for quick DKG setup
+* Built-in Federation UI - Manage your federation through the app's interface
+
+Warning: fedimintd is a server application that runs as an Android Foreground Service. It is data and battery intensive and assumes constant WiFi access while plugged into a charger. It is recommended to use an old phone that is not your daily driver.
