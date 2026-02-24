@@ -15,6 +15,9 @@ build-linux:
 build-debug-apk:
   $ROOT/docker/build-apk.sh debug
 
+test-fdroid:
+  $ROOT/scripts/test-fdroid.sh
+
 run: build-linux
   flutter run
 
