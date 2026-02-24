@@ -10,8 +10,9 @@ plugins {
 // Load key.properties if it exists
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
+val hasSigningConfig = keystorePropertiesFile.exists()
 
-if (keystorePropertiesFile.exists()) {
+if (hasSigningConfig) {
     keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
@@ -41,19 +42,25 @@ android {
         }
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
-            storePassword = keystoreProperties["storePassword"] as String?
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeType = "pkcs12"
+    // Only configure signing if key.properties exists
+    // F-Droid builds unsigned APKs and signs them with their own key
+    if (hasSigningConfig) {
+        signingConfigs {
+            create("release") {
+                storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
+                storePassword = keystoreProperties["storePassword"] as String?
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeType = "pkcs12"
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (hasSigningConfig) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             isShrinkResources = false
         }
