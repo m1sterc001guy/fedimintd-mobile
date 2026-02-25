@@ -17,7 +17,7 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_foreground_task: ^8.13.0
   permission_handler: ^11.3.1
-  flutter_zxing: ^2.2.1
+  qr_code_scanner_plus: ^2.1.1
   share_plus: ^10.0.0
   web_socket_channel: ^3.0.0
   json_rpc_2: ^3.0.3

@@ -8,7 +8,8 @@ import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_zxing/flutter_zxing.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// WebView screen that displays the Fedimintd dashboard.
@@ -36,7 +37,6 @@ class _WebViewScreenState extends State<WebViewScreen>
   bool _isPageLoading = false;
   bool _refreshTriggered = false;
   bool _cancelled = false;
-  bool _isScanningQr = false;
   bool _isCreatingBackup = false;
   bool _backupReminderShown = false;
 
@@ -53,6 +53,41 @@ class _WebViewScreenState extends State<WebViewScreen>
     WidgetsBinding.instance.removeObserver(this);
     _cancelled = true;
     super.dispose();
+  }
+
+  Future<void> _startQrScanner() async {
+    // Request camera permission first
+    final cameraStatus = await Permission.camera.status;
+    if (!cameraStatus.isGranted) {
+      final result = await Permission.camera.request();
+      if (!result.isGranted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Camera permission is required to scan QR codes'),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    if (!mounted) return;
+
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => const QRScannerScreen(),
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && mounted) {
+      _controller.runJavaScript(
+        'window.fedimintQrScannerResult && window.fedimintQrScannerResult("$result")',
+      );
+    }
   }
 
   @override
@@ -79,7 +114,7 @@ class _WebViewScreenState extends State<WebViewScreen>
             onMessageReceived: (message) {
               if (message.message == 'startQrScanner') {
                 if (mounted) {
-                  setState(() => _isScanningQr = true);
+                  _startQrScanner();
                 }
               }
             },
@@ -645,34 +680,6 @@ class _WebViewScreenState extends State<WebViewScreen>
                 minHeight: 2,
                 backgroundColor: Colors.transparent,
               ),
-            if (_isScanningQr)
-              Container(
-                color: Colors.black87,
-                child: Stack(
-                  children: [
-                    ReaderWidget(
-                      onScan: (result) {
-                        final text = result.text;
-                        if (text != null) {
-                          setState(() => _isScanningQr = false);
-                          _controller.runJavaScript(
-                            'window.fedimintQrScannerResult && window.fedimintQrScannerResult("$text")',
-                          );
-                        }
-                      },
-                    ),
-                    Positioned(
-                      top: 60,
-                      right: 16,
-                      child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _isScanningQr = false),
-                        icon: const Icon(Icons.close),
-                        label: const Text('Cancel'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             if (_isCreatingBackup)
               Container(
                 color: Colors.black54,
@@ -692,6 +699,99 @@ class _WebViewScreenState extends State<WebViewScreen>
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Full-screen QR code scanner that returns the scanned code.
+class QRScannerScreen extends StatefulWidget {
+  const QRScannerScreen({super.key});
+
+  @override
+  State<QRScannerScreen> createState() => _QRScannerScreenState();
+}
+
+class _QRScannerScreenState extends State<QRScannerScreen> {
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? _controller;
+  bool _hasScanned = false;
+
+  // Required for hot reload to work properly
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (Platform.isAndroid) {
+      _controller?.pauseCamera();
+    }
+    _controller?.resumeCamera();
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    _controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      if (!_hasScanned && scanData.code != null && scanData.code!.isNotEmpty) {
+        _hasScanned = true;
+        controller.pauseCamera();
+        Navigator.of(context).pop(scanData.code);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: const Text('Scan QR Code'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Stack(
+        children: [
+          QRView(
+            key: qrKey,
+            onQRViewCreated: _onQRViewCreated,
+            overlay: QrScannerOverlayShape(
+              borderColor: AppColors.primary,
+              borderRadius: 10,
+              borderLength: 30,
+              borderWidth: 10,
+              cutOutSize: 280,
+            ),
+          ),
+          Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Point camera at QR code',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
