@@ -15,6 +15,9 @@ build-linux:
 build-debug-apk:
   $ROOT/docker/build-apk.sh debug
 
+build-release-apk:
+  $ROOT/docker/build-apk.sh release
+
 # Scan the latest APK for F-Droid compatibility (checks for Google Play Services dependencies)
 scan-apk:
   #!/usr/bin/env bash
