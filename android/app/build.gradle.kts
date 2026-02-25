@@ -70,3 +70,17 @@ android {
 flutter {
     source = "../.."
 }
+
+// Exclude Google Play Core dependencies for F-Droid compatibility
+// These are pulled in transitively but not needed for this app
+configurations.all {
+    exclude(group = "com.google.android.play", module = "core")
+    exclude(group = "com.google.android.play", module = "core-ktx")
+    exclude(group = "com.google.android.play", module = "core-common")
+    exclude(group = "com.google.android.play", module = "feature-delivery")
+    exclude(group = "com.google.android.play", module = "feature-delivery-ktx")
+    exclude(group = "com.google.android.play", module = "app-update")
+    exclude(group = "com.google.android.play", module = "app-update-ktx")
+    exclude(group = "com.google.android.play", module = "review")
+    exclude(group = "com.google.android.play", module = "review-ktx")
+}

@@ -8,7 +8,7 @@ import 'package:fedimintd_mobile/onboarding.dart';
 import 'package:fedimintd_mobile/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// WebView screen that displays the Fedimintd dashboard.
@@ -650,13 +650,13 @@ class _WebViewScreenState extends State<WebViewScreen>
                 color: Colors.black87,
                 child: Stack(
                   children: [
-                    MobileScanner(
-                      onDetect: (capture) {
-                        final barcode = capture.barcodes.first;
-                        if (barcode.rawValue != null) {
+                    ReaderWidget(
+                      onScan: (result) {
+                        final text = result.text;
+                        if (text != null) {
                           setState(() => _isScanningQr = false);
                           _controller.runJavaScript(
-                            'window.fedimintQrScannerResult && window.fedimintQrScannerResult("${barcode.rawValue}")',
+                            'window.fedimintQrScannerResult && window.fedimintQrScannerResult("$text")',
                           );
                         }
                       },
