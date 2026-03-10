@@ -30,9 +30,6 @@ scan-apk:
   echo "Scanning: $APK"
   fdroid scanner -v --exit-code "$APK"
 
-test-fdroid:
-  $ROOT/scripts/test-fdroid.sh
-
 run: build-linux
   flutter run
 

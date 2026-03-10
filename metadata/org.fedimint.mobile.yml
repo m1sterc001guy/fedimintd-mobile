@@ -1,0 +1,66 @@
+Categories:
+  - Money
+License: MIT
+AuthorName: The Fedimint Developers
+WebSite: https://fedimint.org
+SourceCode: https://github.com/m1sterc001guy/fedimintd-mobile
+IssueTracker: https://github.com/m1sterc001guy/fedimintd-mobile/issues
+Changelog: https://github.com/m1sterc001guy/fedimintd-mobile/releases
+
+AutoName: Fedimint
+
+RepoType: git
+Repo: https://github.com/m1sterc001guy/fedimintd-mobile.git
+
+Builds:
+  - versionName: 0.1.5
+    versionCode: 10590
+    commit: v0.1.5
+    timeout: 14400
+    output: build/app/outputs/flutter-apk/app-release.apk
+    srclibs:
+      - flutter@stable
+    rm:
+      - linux
+    sudo:
+      - apt-get update
+      - apt-get install -y clang libclang-dev cmake ninja-build pkg-config rustup
+    prebuild:
+      - flutterVersion=$(cat .flutter-version)
+      - '[[ $flutterVersion ]]'
+      - git -C $$flutter$$ checkout -f $flutterVersion
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get
+      - rustup default stable
+      - rustup target add aarch64-linux-android
+      - cargo install cargo-ndk --version 4.1.2 --locked
+      - cd rust/fedimintd_mobile && cargo fetch
+    scanignore:
+      - $$flutter$$/bin/cache
+    scandelete:
+      - $$flutter$$
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - export ANDROID_NDK_HOME="$$NDK$$"
+      - ./scripts/build-rust-fdroid.sh
+      - $$flutter$$/bin/flutter build apk --release
+    ndk: 27.3.13750724
+
+MaintainerNotes: |-
+  Fedimint Mobile is a Flutter + Rust application using flutter_rust_bridge.
+  The Rust code is compiled to a native library using cargo-ndk, then bundled
+  into the Flutter APK.
+
+  Build requirements:
+  - Rust toolchain via rustup (from Debian) with aarch64-linux-android target
+  - cargo-ndk 4.1.2 for Android cross-compilation
+  - Flutter SDK (version from .flutter-version, checked out in srclib)
+  - Android NDK 27.3.13750724
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags v[0-9.]+$
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 0.1.5
+CurrentVersionCode: 10590
