@@ -34,7 +34,7 @@ mkdir -p "$JNI_LIBS_DIR"
 # Build Rust library
 # Platform 28 required: aws-lc-sys uses getentropy() which needs Android API 28+
 cd "$PROJECT_ROOT/rust/fedimintd_mobile"
-cargo ndk -t arm64-v8a --platform 28 -o "$JNI_LIBS_DIR" build --release --locked --target "$RUST_TARGET"
+cargo ndk -t arm64-v8a --platform 28 -o "$JNI_LIBS_DIR" build --release --target "$RUST_TARGET"
 
 # Flatten .so files (cargo-ndk puts them in subdirs)
 find "$JNI_LIBS_DIR" -mindepth 2 -type f -name '*.so' -exec mv {} "$JNI_LIBS_DIR" \;
