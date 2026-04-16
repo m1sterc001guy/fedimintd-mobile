@@ -3,6 +3,7 @@
 mod frb_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 
 use std::{
+    convert::Infallible,
     fmt,
     fs::{self, OpenOptions},
     io,
@@ -66,7 +67,7 @@ pub async fn start_fedimintd_esplora(
     db_path: String,
     network_type: NetworkType,
     esplora_url: String,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Infallible> {
     let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
 
     if network_type == NetworkType::Mainnet {
@@ -102,7 +103,7 @@ pub async fn start_fedimintd_bitcoind(
     username: String,
     password: String,
     url: String,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Infallible> {
     let fedimintd_dir = Path::new(&db_path).join("fedimintd_mobile");
 
     if network_type == NetworkType::Mainnet {
@@ -205,7 +206,9 @@ pub async fn download_backup(invite: String, password: String) -> anyhow::Result
         invite_code.api_secret().as_deref(),
     )?;
 
-    let backup = admin_api.guardian_config_backup(ApiAuth(password)).await?;
+    let backup = admin_api
+        .guardian_config_backup(ApiAuth::new(password))
+        .await?;
 
     Ok(backup.tar_archive_bytes)
 }

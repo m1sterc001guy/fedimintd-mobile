@@ -9,7 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 // These functions are ignored because they are not marked as `pub`: `redirect_output`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `eq`, `fmt`
 
-Future<void> startFedimintdEsplora({
+Future<Infallible> startFedimintdEsplora({
   required String dbPath,
   required NetworkType networkType,
   required String esploraUrl,
@@ -19,7 +19,7 @@ Future<void> startFedimintdEsplora({
   esploraUrl: esploraUrl,
 );
 
-Future<void> startFedimintdBitcoind({
+Future<Infallible> startFedimintdBitcoind({
   required String dbPath,
   required NetworkType networkType,
   required String username,
@@ -68,5 +68,8 @@ Future<void> testDecryption({
   dbPath: dbPath,
   password: password,
 );
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Infallible>>
+abstract class Infallible implements RustOpaqueInterface {}
 
 enum NetworkType { mutinynet, regtest, mainnet }
