@@ -3,7 +3,14 @@
 mod frb_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 
 use std::{
-    convert::Infallible, fmt, fs::{self, OpenOptions}, io, os::fd::AsRawFd, path::Path, str::FromStr, time::Duration
+    convert::Infallible,
+    fmt,
+    fs::{self, OpenOptions},
+    io,
+    os::fd::AsRawFd,
+    path::Path,
+    str::FromStr,
+    time::Duration,
 };
 
 use bitcoincore_rpc::RpcApi;
@@ -199,7 +206,9 @@ pub async fn download_backup(invite: String, password: String) -> anyhow::Result
         invite_code.api_secret().as_deref(),
     )?;
 
-    let backup = admin_api.guardian_config_backup(ApiAuth::new(password)).await?;
+    let backup = admin_api
+        .guardian_config_backup(ApiAuth::new(password))
+        .await?;
 
     Ok(backup.tar_archive_bytes)
 }
