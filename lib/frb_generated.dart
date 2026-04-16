@@ -6,391 +6,603 @@
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
-import 'frb_generated.io.dart' if (dart.library.js_interop) 'frb_generated.web.dart';
+import 'frb_generated.io.dart'
+    if (dart.library.js_interop) 'frb_generated.web.dart';
 import 'lib.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+/// Main entrypoint of the Rust API
+class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
+  @internal
+  static final instance = RustLib._();
 
-                /// Main entrypoint of the Rust API
-                class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
-                  @internal
-                  static final instance = RustLib._();
+  RustLib._();
 
-                  RustLib._();
+  /// Initialize flutter_rust_bridge
+  static Future<void> init({
+    RustLibApi? api,
+    BaseHandler? handler,
+    ExternalLibrary? externalLibrary,
+  }) async {
+    await instance.initImpl(
+      api: api,
+      handler: handler,
+      externalLibrary: externalLibrary,
+    );
+  }
 
-                  /// Initialize flutter_rust_bridge
-                  static Future<void> init({
-                    RustLibApi? api,
-                    BaseHandler? handler,
-                    ExternalLibrary? externalLibrary,
-                  }) async {
-                    await instance.initImpl(
-                      api: api,
-                      handler: handler,
-                      externalLibrary: externalLibrary,
-                    );
-                  }
+  /// Initialize flutter_rust_bridge in mock mode.
+  /// No libraries for FFI are loaded.
+  static void initMock({required RustLibApi api}) {
+    instance.initMockImpl(api: api);
+  }
 
-                  /// Initialize flutter_rust_bridge in mock mode.
-                  /// No libraries for FFI are loaded.
-                  static void initMock({
-                    required RustLibApi api,
-                  }) {
-                    instance.initMockImpl(
-                      api: api,
-                    );
-                  }
+  /// Dispose flutter_rust_bridge
+  ///
+  /// The call to this function is optional, since flutter_rust_bridge (and everything else)
+  /// is automatically disposed when the app stops.
+  static void dispose() => instance.disposeImpl();
 
-                  /// Dispose flutter_rust_bridge
-                  ///
-                  /// The call to this function is optional, since flutter_rust_bridge (and everything else)
-                  /// is automatically disposed when the app stops.
-                  static void dispose() => instance.disposeImpl();
+  @override
+  ApiImplConstructor<RustLibApiImpl, RustLibWire> get apiImplConstructor =>
+      RustLibApiImpl.new;
 
-                  @override
-                  ApiImplConstructor<RustLibApiImpl, RustLibWire> get apiImplConstructor => RustLibApiImpl.new;
+  @override
+  WireConstructor<RustLibWire> get wireConstructor =>
+      RustLibWire.fromExternalLibrary;
 
-                  @override
-                  WireConstructor<RustLibWire> get wireConstructor => RustLibWire.fromExternalLibrary;
+  @override
+  Future<void> executeRustInitializers() async {}
 
-                  @override
-                  Future<void> executeRustInitializers() async {
-                    
-                  }
+  @override
+  ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig =>
+      kDefaultExternalLibraryLoaderConfig;
 
-                  @override
-                  ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig => kDefaultExternalLibraryLoaderConfig;
+  @override
+  String get codegenVersion => '2.9.0';
 
-                  @override
-                  String get codegenVersion => '2.9.0';
+  @override
+  int get rustContentHash => -1598334722;
 
-                  @override
-                  int get rustContentHash => -1598334722;
+  static const kDefaultExternalLibraryLoaderConfig =
+      ExternalLibraryLoaderConfig(
+        stem: 'fedimintd_mobile',
+        ioDirectory: 'rust/fedimintd_mobile/target/release/',
+        webPrefix: 'pkg/',
+      );
+}
 
-                  static const kDefaultExternalLibraryLoaderConfig = ExternalLibraryLoaderConfig(
-                    stem: 'fedimintd_mobile',
-                    ioDirectory: 'rust/fedimintd_mobile/target/release/',
-                    webPrefix: 'pkg/',
-                  );
-                }
-                
+abstract class RustLibApi extends BaseApi {
+  Future<Uint8List> crateDownloadBackup({
+    required String invite,
+    required String password,
+  });
 
-                abstract class RustLibApi extends BaseApi {
-                  Future<Uint8List> crateDownloadBackup({required String invite , required String password });
+  Future<Infallible> crateStartFedimintdBitcoind({
+    required String dbPath,
+    required NetworkType networkType,
+    required String username,
+    required String password,
+    required String url,
+  });
 
-Future<Infallible> crateStartFedimintdBitcoind({required String dbPath , required NetworkType networkType , required String username , required String password , required String url });
+  Future<Infallible> crateStartFedimintdEsplora({
+    required String dbPath,
+    required NetworkType networkType,
+    required String esploraUrl,
+  });
 
-Future<Infallible> crateStartFedimintdEsplora({required String dbPath , required NetworkType networkType , required String esploraUrl });
+  Future<void> crateTestBitcoind({
+    required String username,
+    required String password,
+    required String url,
+    required NetworkType network,
+  });
 
-Future<void> crateTestBitcoind({required String username , required String password , required String url , required NetworkType network });
+  Future<void> crateTestDecryption({
+    required String dbPath,
+    required String password,
+  });
 
-Future<void> crateTestDecryption({required String dbPath , required String password });
+  Future<void> crateTestEsplora({
+    required String esploraUrl,
+    required NetworkType network,
+  });
 
-Future<void> crateTestEsplora({required String esploraUrl , required NetworkType network });
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_Infallible;
 
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Infallible;
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_Infallible;
 
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Infallible;
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_InfalliblePtr;
+}
 
-CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_InfalliblePtr;
+class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
+  RustLibApiImpl({
+    required super.handler,
+    required super.wire,
+    required super.generalizedFrbRustBinding,
+    required super.portManager,
+  });
 
-
-                }
-                
-
-                class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
-                  RustLibApiImpl({
-                    required super.handler,
-                    required super.wire,
-                    required super.generalizedFrbRustBinding,
-                    required super.portManager,
-                  });
-
-                  @override Future<Uint8List> crateDownloadBackup({required String invite , required String password })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(invite, serializer);
-sse_encode_String(password, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<Uint8List> crateDownloadBackup({
+    required String invite,
+    required String password,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(invite, serializer);
+          sse_encode_String(password, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateDownloadBackupConstMeta,
-            argValues: [invite, password],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateDownloadBackupConstMeta,
+        argValues: [invite, password],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateDownloadBackupConstMeta => const TaskConstMeta(
+    debugName: "download_backup",
+    argNames: ["invite", "password"],
+  );
 
-        TaskConstMeta get kCrateDownloadBackupConstMeta => const TaskConstMeta(
-            debugName: "download_backup",
-            argNames: ["invite", "password"],
-        );
-        
-
-@override Future<Infallible> crateStartFedimintdBitcoind({required String dbPath , required NetworkType networkType , required String username , required String password , required String url })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(dbPath, serializer);
-sse_encode_network_type(networkType, serializer);
-sse_encode_String(username, serializer);
-sse_encode_String(password, serializer);
-sse_encode_String(url, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
-          decodeSuccessData: sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible,
+  @override
+  Future<Infallible> crateStartFedimintdBitcoind({
+    required String dbPath,
+    required NetworkType networkType,
+    required String username,
+    required String password,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_network_type(networkType, serializer);
+          sse_encode_String(username, serializer);
+          sse_encode_String(password, serializer);
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateStartFedimintdBitcoindConstMeta,
-            argValues: [dbPath, networkType, username, password, url],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateStartFedimintdBitcoindConstMeta,
+        argValues: [dbPath, networkType, username, password, url],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateStartFedimintdBitcoindConstMeta =>
+      const TaskConstMeta(
+        debugName: "start_fedimintd_bitcoind",
+        argNames: ["dbPath", "networkType", "username", "password", "url"],
+      );
 
-        TaskConstMeta get kCrateStartFedimintdBitcoindConstMeta => const TaskConstMeta(
-            debugName: "start_fedimintd_bitcoind",
-            argNames: ["dbPath", "networkType", "username", "password", "url"],
-        );
-        
-
-@override Future<Infallible> crateStartFedimintdEsplora({required String dbPath , required NetworkType networkType , required String esploraUrl })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(dbPath, serializer);
-sse_encode_network_type(networkType, serializer);
-sse_encode_String(esploraUrl, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
-          decodeSuccessData: sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible,
+  @override
+  Future<Infallible> crateStartFedimintdEsplora({
+    required String dbPath,
+    required NetworkType networkType,
+    required String esploraUrl,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_network_type(networkType, serializer);
+          sse_encode_String(esploraUrl, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateStartFedimintdEsploraConstMeta,
-            argValues: [dbPath, networkType, esploraUrl],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateStartFedimintdEsploraConstMeta,
+        argValues: [dbPath, networkType, esploraUrl],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateStartFedimintdEsploraConstMeta => const TaskConstMeta(
+    debugName: "start_fedimintd_esplora",
+    argNames: ["dbPath", "networkType", "esploraUrl"],
+  );
 
-        TaskConstMeta get kCrateStartFedimintdEsploraConstMeta => const TaskConstMeta(
-            debugName: "start_fedimintd_esplora",
-            argNames: ["dbPath", "networkType", "esploraUrl"],
-        );
-        
-
-@override Future<void> crateTestBitcoind({required String username , required String password , required String url , required NetworkType network })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(username, serializer);
-sse_encode_String(password, serializer);
-sse_encode_String(url, serializer);
-sse_encode_network_type(network, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateTestBitcoind({
+    required String username,
+    required String password,
+    required String url,
+    required NetworkType network,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(username, serializer);
+          sse_encode_String(password, serializer);
+          sse_encode_String(url, serializer);
+          sse_encode_network_type(network, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateTestBitcoindConstMeta,
-            argValues: [username, password, url, network],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateTestBitcoindConstMeta,
+        argValues: [username, password, url, network],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateTestBitcoindConstMeta => const TaskConstMeta(
+    debugName: "test_bitcoind",
+    argNames: ["username", "password", "url", "network"],
+  );
 
-        TaskConstMeta get kCrateTestBitcoindConstMeta => const TaskConstMeta(
-            debugName: "test_bitcoind",
-            argNames: ["username", "password", "url", "network"],
-        );
-        
-
-@override Future<void> crateTestDecryption({required String dbPath , required String password })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(dbPath, serializer);
-sse_encode_String(password, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateTestDecryption({
+    required String dbPath,
+    required String password,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(dbPath, serializer);
+          sse_encode_String(password, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateTestDecryptionConstMeta,
-            argValues: [dbPath, password],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateTestDecryptionConstMeta,
+        argValues: [dbPath, password],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateTestDecryptionConstMeta => const TaskConstMeta(
+    debugName: "test_decryption",
+    argNames: ["dbPath", "password"],
+  );
 
-        TaskConstMeta get kCrateTestDecryptionConstMeta => const TaskConstMeta(
-            debugName: "test_decryption",
-            argNames: ["dbPath", "password"],
-        );
-        
-
-@override Future<void> crateTestEsplora({required String esploraUrl , required NetworkType network })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(esploraUrl, serializer);
-sse_encode_network_type(network, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateTestEsplora({
+    required String esploraUrl,
+    required NetworkType network,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(esploraUrl, serializer);
+          sse_encode_network_type(network, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateTestEsploraConstMeta,
-            argValues: [esploraUrl, network],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateTestEsploraConstMeta,
+        argValues: [esploraUrl, network],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateTestEsploraConstMeta => const TaskConstMeta(
+    debugName: "test_esplora",
+    argNames: ["esploraUrl", "network"],
+  );
 
-        TaskConstMeta get kCrateTestEsploraConstMeta => const TaskConstMeta(
-            debugName: "test_esplora",
-            argNames: ["esploraUrl", "network"],
-        );
-        
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_Infallible =>
+      wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible;
 
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Infallible => wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible;
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_Infallible =>
+      wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible;
 
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Infallible => wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible;
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AnyhowException(raw as String);
+  }
 
+  @protected
+  Infallible
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return InfallibleImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
 
+  @protected
+  Infallible
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return InfallibleImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
 
-                  @protected AnyhowException dco_decode_AnyhowException(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return AnyhowException(raw as String); }
+  @protected
+  String dco_decode_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as String;
+  }
 
-@protected Infallible dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return InfallibleImpl.frbInternalDcoDecode(raw as List<dynamic>); }
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
 
-@protected Infallible dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return InfallibleImpl.frbInternalDcoDecode(raw as List<dynamic>); }
+  @protected
+  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as Uint8List;
+  }
 
-@protected String dco_decode_String(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as String; }
+  @protected
+  NetworkType dco_decode_network_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetworkType.values[raw as int];
+  }
 
-@protected int dco_decode_i_32(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as int; }
+  @protected
+  int dco_decode_u_8(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
 
-@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as Uint8List; }
+  @protected
+  void dco_decode_unit(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return;
+  }
 
-@protected NetworkType dco_decode_network_type(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return NetworkType.values[raw as int]; }
+  @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
 
-@protected int dco_decode_u_8(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as int; }
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_String(deserializer);
+    return AnyhowException(inner);
+  }
 
-@protected void dco_decode_unit(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return; }
+  @protected
+  Infallible
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return InfallibleImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
 
-@protected BigInt dco_decode_usize(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dcoDecodeU64(raw); }
+  @protected
+  Infallible
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return InfallibleImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
 
-@protected AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_String(deserializer);
-        return AnyhowException(inner); }
+  @protected
+  String sse_decode_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_prim_u_8_strict(deserializer);
+    return utf8.decoder.convert(inner);
+  }
 
-@protected Infallible sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return InfallibleImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
 
-@protected Infallible sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return InfallibleImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
+  @protected
+  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getUint8List(len_);
+  }
 
-@protected String sse_decode_String(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_list_prim_u_8_strict(deserializer);
-        return utf8.decoder.convert(inner); }
+  @protected
+  NetworkType sse_decode_network_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return NetworkType.values[inner];
+  }
 
-@protected int sse_decode_i_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getInt32(); }
+  @protected
+  int sse_decode_u_8(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8();
+  }
 
-@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var len_ = sse_decode_i_32(deserializer);
-                return deserializer.buffer.getUint8List(len_); }
+  @protected
+  void sse_decode_unit(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+  }
 
-@protected NetworkType sse_decode_network_type(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_i_32(deserializer);
-        return NetworkType.values[inner]; }
+  @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
+  }
 
-@protected int sse_decode_u_8(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getUint8(); }
+  @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
 
-@protected void sse_decode_unit(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
- }
+  @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.message, serializer);
+  }
 
-@protected BigInt sse_decode_usize(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getBigUint64(); }
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(
+    Infallible self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as InfallibleImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
 
-@protected bool sse_decode_bool(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getUint8() != 0; }
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(
+    Infallible self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as InfallibleImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
 
-@protected void sse_encode_AnyhowException(AnyhowException self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.message, serializer); }
+  @protected
+  void sse_encode_String(String self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
 
-@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(Infallible self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as InfallibleImpl).frbInternalSseEncode(move: true), serializer); }
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
+  }
 
-@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerInfallible(Infallible self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as InfallibleImpl).frbInternalSseEncode(move: null), serializer); }
+  @protected
+  void sse_encode_list_prim_u_8_strict(
+    Uint8List self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putUint8List(self);
+  }
 
-@protected void sse_encode_String(String self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer); }
+  @protected
+  void sse_encode_network_type(NetworkType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
 
-@protected void sse_encode_i_32(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putInt32(self); }
+  @protected
+  void sse_encode_u_8(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self);
+  }
 
-@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-                    serializer.buffer.putUint8List(self); }
+  @protected
+  void sse_encode_unit(void self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+  }
 
-@protected void sse_encode_network_type(NetworkType self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.index, serializer); }
+  @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
+  }
 
-@protected void sse_encode_u_8(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putUint8(self); }
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
+  }
+}
 
-@protected void sse_encode_unit(void self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
- }
+@sealed
+class InfallibleImpl extends RustOpaque implements Infallible {
+  // Not to be used by end users
+  InfallibleImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
 
-@protected void sse_encode_usize(BigInt self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putBigUint64(self); }
+  // Not to be used by end users
+  InfallibleImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
 
-@protected void sse_encode_bool(bool self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putUint8(self ? 1 : 0); }
-                }
-                
-
-            @sealed class InfallibleImpl extends RustOpaque implements Infallible {
-                // Not to be used by end users
-                InfallibleImpl.frbInternalDcoDecode(List<dynamic> wire):
-                    super.frbInternalDcoDecode(wire, _kStaticData);
-
-                // Not to be used by end users
-                InfallibleImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative):
-                    super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-                static final _kStaticData = RustArcStaticData(
-                    rustArcIncrementStrongCount: RustLib.instance.api.rust_arc_increment_strong_count_Infallible,
-                    rustArcDecrementStrongCount: RustLib.instance.api.rust_arc_decrement_strong_count_Infallible,
-                    rustArcDecrementStrongCountPtr: RustLib.instance.api.rust_arc_decrement_strong_count_InfalliblePtr,
-                );
-
-                
-            }
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_Infallible,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_Infallible,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_InfalliblePtr,
+  );
+}
