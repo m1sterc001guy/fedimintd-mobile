@@ -413,16 +413,27 @@ class _WebViewScreenState extends State<WebViewScreen>
   }
 
   Future<String?> _extractInviteCodeFromDom() async {
-    // Extract invite code from the copyInviteCodeBtn onclick attribute
-    // The onclick looks like: navigator.clipboard.writeText('fed1...').then(...)
+    // Extract the invite code from the readonly input rendered by
+    // `copiable_text` inside the "Invite Code" card on the dashboard.
     const js = '''
       (function() {
-        const btn = document.getElementById('copyInviteCodeBtn');
-        if (!btn) return null;
-        const onclick = btn.getAttribute('onclick');
-        if (!onclick) return null;
-        const match = onclick.match(/writeText\\('([^']+)'\\)/);
-        return match ? match[1] : null;
+        const headers = document.querySelectorAll('.card-header');
+        for (const h of headers) {
+          if ((h.textContent || '').trim() !== 'Invite Code') continue;
+          const card = h.parentElement;
+          if (!card) continue;
+          const input = card.querySelector('.card-body input[readonly]');
+          if (input && input.value && input.value.startsWith('fed1')) {
+            return input.value;
+          }
+        }
+        const inputs = document.querySelectorAll('input[readonly]');
+        for (const inp of inputs) {
+          if (inp.value && inp.value.startsWith('fed1')) {
+            return inp.value;
+          }
+        }
+        return null;
       })();
     ''';
 
