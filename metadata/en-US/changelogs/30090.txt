@@ -1,0 +1,1 @@
+Updating Fedimint dependencies to v0.11.2
