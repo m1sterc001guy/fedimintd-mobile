@@ -1,8 +1,8 @@
 {
   inputs = {
-    fedimint.url = "github:fedimint/fedimint?ref=v0.11.2";
+    fedimint.url = "github:fedimint/fedimint?ref=v0.12.0";
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
   };
 
   outputs = { self, fedimint, flake-utils, nixpkgs, ... }:
@@ -35,7 +35,7 @@
       in {
         devShells = {
           # You can expose all or specific shells from the original flake
-          default = devShells.cross.overrideAttrs (old: {
+          default = devShells.default.overrideAttrs (old: {
             nativeBuildInputs = old.nativeBuildInputs or [] ++ [
               pkgs.flutter
               pkgs.just
