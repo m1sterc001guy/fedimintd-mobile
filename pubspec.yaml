@@ -1,7 +1,7 @@
 name: fedimintd_mobile
 description: "A flutter project for running fedimintd"
 publish_to: 'none'
-version: 0.5.0-alpha
+version: 0.5.0-rc.0+50000
 
 environment:
   sdk: ^3.7.2
