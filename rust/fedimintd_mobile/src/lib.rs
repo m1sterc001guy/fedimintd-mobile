@@ -13,16 +13,12 @@ use std::{
     time::Duration,
 };
 
+use anyhow::{self, ensure};
 use bitcoincore_rpc::RpcApi;
 use fedimint_aead::{encrypted_read, get_encryption_key};
 use fedimint_api_client::api::DynGlobalApi;
 use fedimint_connectors::ConnectorRegistry;
-use fedimint_core::{
-    anyhow::{self, ensure},
-    fedimint_build_code_version_env,
-    invite_code::InviteCode,
-    module::ApiAuth,
-};
+use fedimint_core::{fedimint_build_code_version_env, invite_code::InviteCode, module::ApiAuth};
 use flutter_rust_bridge::frb;
 
 fn redirect_output(log_file_path: &Path) -> io::Result<()> {
@@ -195,16 +191,14 @@ pub async fn download_backup(invite: String, password: String) -> anyhow::Result
     let invite_code = InviteCode::from_str(&invite)?;
     let our_id = invite_code.peer();
     let peers = invite_code.peers();
-    let endpoints = ConnectorRegistry::build_from_client_defaults()
-        .bind()
-        .await?;
+    let endpoints = ConnectorRegistry::build_from_client_defaults().bind().await;
 
     let admin_api = DynGlobalApi::new_admin(
         endpoints,
         our_id,
         peers.get(&our_id).cloned().expect("Did not have URL"),
         invite_code.api_secret().as_deref(),
-    )?;
+    );
 
     let backup = admin_api
         .guardian_config_backup(ApiAuth::new(password))
