@@ -18,7 +18,10 @@ use bitcoincore_rpc::RpcApi;
 use fedimint_aead::{encrypted_read, get_encryption_key};
 use fedimint_api_client::api::DynGlobalApi;
 use fedimint_connectors::ConnectorRegistry;
-use fedimint_core::{fedimint_build_code_version_env, invite_code::InviteCode, module::ApiAuth};
+use fedimint_core::{
+    fedimint_build_code_version_env, invite_code::InviteCode, module::ApiAuth,
+    rustls::install_crypto_provider,
+};
 use flutter_rust_bridge::frb;
 
 fn redirect_output(log_file_path: &Path) -> io::Result<()> {
@@ -132,6 +135,9 @@ pub async fn start_fedimintd_bitcoind(
 
 #[frb]
 pub async fn test_esplora(esplora_url: String, network: NetworkType) -> anyhow::Result<()> {
+    // esplora-client uses rustls via bitreq, which needs a process-level crypto
+    // provider. fedimintd installs one on startup, but this can run before that.
+    install_crypto_provider().await;
     let client = esplora_client::Builder::new(&esplora_url)
         .max_retries(0)
         .build_async()?;
@@ -188,6 +194,7 @@ pub async fn test_bitcoind(
 
 #[frb]
 pub async fn download_backup(invite: String, password: String) -> anyhow::Result<Vec<u8>> {
+    install_crypto_provider().await;
     let invite_code = InviteCode::from_str(&invite)?;
     let our_id = invite_code.peer();
     let peers = invite_code.peers();
